@@ -24,9 +24,14 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Accept Android SDK licenses
+        run: yes | sdkmanager --licenses || true
+
       - name: Install Capacitor CLI and Android
-        run: |
-          npm install --legacy-peer-deps @capacitor/core @capacitor/cli @capacitor/android @capacitor/status-bar @capacitor/splash-screen
+        run: npm install --legacy-peer-deps @capacitor/core @capacitor/cli @capacitor/android @capacitor/status-bar @capacitor/splash-screen
 
       - name: Add Android platform
         run: npx cap add android
@@ -38,7 +43,7 @@ jobs:
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon
+          ./gradlew assembleDebug --no-daemon --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
