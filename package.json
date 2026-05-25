@@ -1,0 +1,21 @@
+{
+  "name": "profkvest",
+  "version": "1.0.0",
+  "description": "ПрофКвест — профориентационный квест СКФ МТУСИ",
+  "private": true,
+  "scripts": {
+    "ios:init": "npx cap add ios",
+    "ios:sync": "npx cap copy ios && npx cap sync ios",
+    "ios:open": "npx cap open ios",
+    "ios:build": "npx cap copy ios && npx cap sync ios && npx cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/core": "^6.2.0",
+    "@capacitor/ios": "^6.2.0",
+    "@capacitor/status-bar": "^6.0.2",
+    "@capacitor/splash-screen": "^6.0.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.2.0"
+  }
+}

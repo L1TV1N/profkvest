@@ -1,0 +1,1505 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ПрофКвест">
+<meta name="theme-color" content="#372579">
+<title>ПрофКвест — СКФ МТУСИ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+:root{--p:#372579;--pl:#4e35a8;--pd:#251857;--pa:#7c5fd4;--bg:#f0eefa;--white:#fff;--txt:#151515;--mu:#7b7b9d;--ok:#27ae60;--err:#e74c3c;--warn:#f39c12;--sh:0 4px 24px rgba(55,37,121,.13)}
+html,body{height:100%;overflow:hidden;background:var(--p);font-family:'Montserrat',sans-serif}
+#app{position:relative;width:100%;height:100%;max-width:430px;margin:0 auto;overflow:hidden;background:var(--bg)}
+
+/* ── SPLASH ── */
+#splash{position:fixed;inset:0;max-width:430px;margin:0 auto;background:linear-gradient(155deg,var(--pd),var(--p),var(--pl));display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:2000;transition:opacity .6s ease}
+#splash.hide{opacity:0;pointer-events:none}
+.sp-logo{font-size:72px;animation:sp-pop .7s cubic-bezier(.34,1.56,.64,1) both}
+.sp-logo-svg{animation:sp-pop .7s cubic-bezier(.34,1.56,.64,1) both;filter:brightness(0) invert(1);opacity:.95}
+.sp-title{color:#fff;font-size:42px;font-weight:900;letter-spacing:-2px;margin-top:16px;animation:sp-pop .7s .1s cubic-bezier(.34,1.56,.64,1) both}
+.sp-sub{color:rgba(255,255,255,.6);font-size:14px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-top:6px;animation:sp-pop .7s .2s ease both}
+.sp-bar{width:140px;height:3px;background:rgba(255,255,255,.2);border-radius:3px;margin-top:48px;overflow:hidden;animation:sp-pop .7s .3s ease both}
+.sp-fill{height:100%;background:#fff;border-radius:3px;width:0;animation:sp-load 1.4s .5s ease-out forwards}
+@keyframes sp-pop{from{opacity:0;transform:scale(.5)}to{opacity:1;transform:scale(1)}}
+@keyframes sp-load{to{width:100%}}
+
+/* ── CANVASES ── */
+#confetti,#particles{position:absolute;inset:0;pointer-events:none}
+#confetti{position:fixed;z-index:999}
+#particles{z-index:0}
+
+/* ── SOUND BTN ── */
+#snd-btn{position:absolute;bottom:max(100px,env(safe-area-inset-bottom,0px) + 100px);right:14px;width:44px;height:44px;background:rgba(55,37,121,.88);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:none;border-radius:50%;font-size:18px;cursor:pointer;z-index:200;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(55,37,121,.4);transition:transform .15s}
+#snd-btn:active{transform:scale(.9)}
+
+/* ── PROFESSION INTRO OVERLAY ── */
+#intro-overlay{position:absolute;inset:0;background:linear-gradient(155deg,var(--pd),var(--p),var(--pl));display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:500;opacity:0;pointer-events:none;transition:opacity .25s}
+#intro-overlay.show{opacity:1;pointer-events:all}
+.io-emo{font-size:80px;animation:io-bounce .5s cubic-bezier(.34,1.56,.64,1)}
+.io-lbl{color:rgba(255,255,255,.6);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-top:16px}
+.io-name{color:#fff;font-size:28px;font-weight:900;margin-top:6px}
+.io-fact{color:rgba(255,255,255,.75);font-size:13px;font-weight:500;margin-top:12px;text-align:center;max-width:280px;line-height:1.5;padding:10px 16px;background:rgba(255,255,255,.1);border-radius:12px}
+.io-bar{width:160px;height:3px;background:rgba(255,255,255,.2);border-radius:3px;margin-top:32px;overflow:hidden}
+.io-fill{height:100%;background:rgba(255,255,255,.8);border-radius:3px;width:0;transition:width 1.2s linear}
+@keyframes io-bounce{from{transform:scale(0)}to{transform:scale(1)}}
+
+/* ── SCREENS ── */
+.scr{position:absolute;inset:0;display:flex;flex-direction:column;opacity:0;pointer-events:none;transform:translateX(44px);transition:opacity .3s ease,transform .3s ease;overflow:hidden}
+.scr.on{opacity:1;pointer-events:all;transform:translateX(0)}
+.scr.out{opacity:0;transform:translateX(-44px)}
+
+/* ════ HOME ════ */
+#sh{background:linear-gradient(155deg,var(--pd) 0%,var(--p) 52%,var(--pl) 100%);justify-content:space-between;z-index:1}
+.h-top{padding:60px 28px 0;flex:1;display:flex;flex-direction:column;position:relative;z-index:2}
+.h-badge{display:inline-flex;align-items:center;gap:9px;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.2);border-radius:100px;padding:8px 16px;width:fit-content}
+.h-badge span{color:rgba(255,255,255,.8);font-size:12px;font-weight:700;letter-spacing:.6px;text-transform:uppercase}
+.h-title{color:#fff;font-size:56px;font-weight:900;line-height:.92;margin-top:22px;letter-spacing:-2px}
+.h-title em{color:rgba(255,255,255,.3);font-style:normal}
+.h-sub{color:rgba(255,255,255,.68);font-size:14px;font-weight:500;margin-top:12px;line-height:1.55;max-width:275px}
+.h-method{display:flex;align-items:center;gap:11px;margin-top:20px;background:rgba(255,255,255,.1);border-radius:14px;padding:12px 16px}
+.h-mic{font-size:22px}
+.h-mtx b{color:#fff;font-size:13px;display:block}
+.h-mtx span{color:rgba(255,255,255,.55);font-size:11px;font-weight:600}
+.chips{display:flex;gap:7px;margin-top:18px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{display:flex;align-items:center;gap:5px;white-space:nowrap;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:100px;padding:6px 13px;color:#fff;font-size:11px;font-weight:600;flex-shrink:0}
+.h-bot{padding:22px 22px max(46px,env(safe-area-inset-bottom,0px) + 22px);position:relative;z-index:2}
+.srow{display:flex;margin-bottom:20px}
+.s1{flex:1;text-align:center;border-right:1px solid rgba(255,255,255,.15)}
+.s1:last-child{border:none}
+.sn{color:#fff;font-size:26px;font-weight:900}
+.sl{color:rgba(255,255,255,.45);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-top:1px}
+.btn{width:100%;padding:17px;border:none;border-radius:15px;font-family:'Montserrat',sans-serif;font-size:16px;font-weight:800;cursor:pointer;transition:transform .15s}
+.btn:active{transform:scale(.96)}
+.btn-w{background:#fff;color:var(--p);box-shadow:0 10px 32px rgba(0,0,0,.25)}
+.btn-g{background:transparent;color:rgba(255,255,255,.72);border:2px solid rgba(255,255,255,.22);margin-top:10px;font-size:14px;padding:14px}
+.btn-p{background:var(--p);color:#fff;box-shadow:0 8px 24px rgba(55,37,121,.38)}
+.btn-p:disabled{opacity:.3;pointer-events:none}
+
+/* ════ NAME ════ */
+#sn{background:var(--bg)}
+.n-hdr{background:linear-gradient(135deg,var(--p),var(--pl));padding:54px 26px 34px;border-radius:0 0 28px 28px;flex-shrink:0}
+.back{width:40px;height:40px;background:rgba(255,255,255,.15);border:none;border-radius:12px;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-bottom:18px}
+.n-hdr h2{color:#fff;font-size:26px;font-weight:800}
+.n-hdr p{color:rgba(255,255,255,.62);font-size:13px;font-weight:500;margin-top:5px}
+.n-body{padding:24px 20px max(24px,env(safe-area-inset-bottom,0px) + 16px);overflow-y:auto;flex:1;-webkit-overflow-scrolling:touch}
+.lbl{font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:8px}
+.inp{width:100%;padding:14px 18px;border:2px solid #ddd6f8;border-radius:13px;font-family:'Montserrat',sans-serif;font-size:16px;font-weight:600;color:var(--txt);background:#fff;outline:none;transition:border-color .2s;margin-bottom:20px;-webkit-user-select:text;user-select:text}
+.inp:focus{border-color:var(--p)}
+.gg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:24px}
+.gc{padding:11px 4px;border:2px solid #ddd6f8;border-radius:11px;background:#fff;color:var(--mu);font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;cursor:pointer;text-align:center;transition:all .15s}
+.gc.on{border-color:var(--p);background:var(--p);color:#fff}
+.ri-info{background:#fff;border-radius:14px;padding:14px;margin-bottom:20px;border:1px solid #ede8fc}
+.ri-info h4{font-size:12px;font-weight:800;color:var(--p);margin-bottom:8px}
+.ri-dims{display:flex;flex-wrap:wrap;gap:6px}
+.ri-d{background:var(--bg);border-radius:7px;padding:4px 9px;font-size:11px;font-weight:700;color:var(--p)}
+
+/* ════ SIM ════ */
+#ss{background:var(--bg)}
+.s-hdr{background:linear-gradient(135deg,var(--p),var(--pl));padding:50px 20px 20px;border-radius:0 0 26px 26px;flex-shrink:0}
+.s-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.s-left{display:flex;flex-direction:column;gap:4px}
+.s-step{color:rgba(255,255,255,.55);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.pts-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.15);border-radius:8px;padding:4px 10px;color:#fff;font-size:13px;font-weight:800}
+.pts-delta{position:absolute;right:70px;top:58px;color:#ffd700;font-size:14px;font-weight:900;pointer-events:none;animation:float-up .9s ease-out forwards}
+@keyframes float-up{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-38px)}}
+/* timer ring */
+.tmr{position:relative;width:52px;height:52px;flex-shrink:0}
+.tmr svg{transform:rotate(-90deg)}
+.tmr-n{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:800}
+/* difficulty */
+.diff-row{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.diff-stars{display:flex;gap:2px}
+.diff-star{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.25)}
+.diff-star.on{background:#ffd700}
+.diff-lbl{color:rgba(255,255,255,.6);font-size:11px;font-weight:600}
+.fact-chip{background:rgba(255,255,255,.1);border-radius:8px;padding:4px 10px;font-size:10px;font-weight:600;color:rgba(255,255,255,.8);margin-left:auto;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* progress dots */
+.pdots{display:flex;gap:5px;margin-bottom:14px}
+.pd{height:4px;border-radius:2px;flex:1;background:rgba(255,255,255,.22);transition:all .4s}
+.pd.ok{background:#27ae60}.pd.bad{background:rgba(231,76,60,.7)}.pd.cur{background:#fff;flex:2.5}
+/* streak */
+.streak-banner{position:absolute;top:14px;left:50%;transform:translateX(-50%);background:linear-gradient(90deg,#f39c12,#e67e22);border-radius:100px;padding:6px 16px;display:flex;align-items:center;gap:6px;z-index:20;white-space:nowrap;box-shadow:0 4px 16px rgba(243,156,18,.4);animation:str-in .3s cubic-bezier(.34,1.56,.64,1)}
+@keyframes str-in{from{opacity:0;transform:translateX(-50%) scale(.6)}to{opacity:1;transform:translateX(-50%) scale(1)}}
+.streak-banner span{color:#fff;font-size:13px;font-weight:800}
+/* sim prof */
+.s-prof{display:flex;align-items:center;gap:13px}
+.s-emo{width:54px;height:54px;background:rgba(255,255,255,.15);border-radius:17px;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0}
+.s-pl{color:rgba(255,255,255,.5);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.s-pn{color:#fff;font-size:20px;font-weight:800}
+.s-pt{color:rgba(255,255,255,.7);font-size:12px;font-weight:500;margin-top:1px}
+.s-dims{display:flex;gap:5px;margin-top:6px}
+.dim-b{background:rgba(255,255,255,.18);border-radius:6px;padding:3px 8px;font-size:10px;font-weight:700;color:rgba(255,255,255,.9)}
+/* safe area iOS */
+.safe-bot{padding-bottom:max(32px,env(safe-area-inset-bottom,0px) + 16px)}
+/* scroll */
+.s-scr{flex:1;overflow-y:auto;padding:18px 18px 160px;-webkit-overflow-scrolling:touch}
+.slbl{font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.8px;margin-bottom:7px}
+.stask{font-size:14px;font-weight:600;color:var(--txt);line-height:1.5;margin-bottom:14px}
+.svis{background:#fff;border-radius:15px;padding:17px;margin-bottom:15px;box-shadow:var(--sh)}
+/* code */
+.code{font-family:'Courier New',monospace;font-size:13px;line-height:1.85;background:#faf8ff;border-radius:10px;padding:14px}
+.cl{display:block}.ck{color:#7c5fd4;font-weight:700}.cf{color:#2e86ab}.cn{color:#e67e22}.co{color:#e74c3c;font-weight:700}.cs{color:#27ae60}.cmt{color:#aaa;font-style:italic}
+.clue{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid #ede8fc;align-items:flex-start}.clue:last-child{border:none}
+.ci{font-size:16px;flex-shrink:0;margin-top:1px}.ct{font-size:13px;font-weight:600;color:var(--txt);line-height:1.4}
+.dtbl{width:100%;border-collapse:collapse;font-size:12px}
+.dtbl th{background:var(--p);color:#fff;padding:8px;font-weight:700;text-align:left;font-size:11px}
+.dtbl td{padding:8px;border-bottom:1px solid #ede8fc;font-weight:600;color:var(--txt)}
+.dtbl td.up{color:var(--ok)}.dtbl td.dn{color:var(--err)}
+.net{display:flex;flex-direction:column;align-items:center}
+.nb{padding:6px 13px;border-radius:9px;font-size:11px;font-weight:700;color:#fff;display:inline-block}
+.nl{width:2px;height:16px;background:#c5bae8;margin:0 auto}
+.nr{display:flex;gap:10px;align-items:flex-start}.nc{display:flex;flex-direction:column;align-items:center}
+.nlb{font-size:9px;color:var(--mu);font-weight:700;text-align:center;margin-top:3px}
+.email{border:1px solid #ede8fc;border-radius:10px;overflow:hidden;font-size:12px}
+.email-hdr{background:#f8f5ff;padding:10px 12px;border-bottom:1px solid #ede8fc}
+.erow{display:flex;gap:8px;align-items:center;margin-bottom:4px}.erow:last-child{margin:0}
+.elbl{color:var(--mu);font-weight:700;font-size:10px;width:32px;flex-shrink:0}
+.eval{font-weight:600;color:var(--txt);font-size:11px}
+.email-body{padding:12px;color:#444;font-size:12px;line-height:1.55;font-weight:500}
+.elink{color:#0066cc;text-decoration:underline;font-weight:700}
+.red-flag{background:#fff5f5;border-radius:6px;padding:4px 10px;margin-top:8px;font-size:10px;font-weight:700;color:var(--err);display:inline-block}
+.ui-mock{border:1px solid #ede8fc;border-radius:10px;overflow:hidden}
+.ui-nav{background:#372579;padding:7px 12px;display:flex;align-items:center;justify-content:space-between}
+.ui-nav span{color:#fff;font-size:11px;font-weight:700}
+.ui-content{padding:11px;background:#fff}
+.ui-hero{background:#f0eefa;border-radius:7px;height:55px;display:flex;align-items:center;justify-content:center;color:var(--mu);font-size:10px;font-weight:600;margin-bottom:7px}
+.ui-items{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:7px}
+.ui-item{background:var(--bg);border-radius:6px;padding:7px;font-size:10px;font-weight:700;color:var(--txt)}
+.ui-cta{background:#e8e4f8;border-radius:6px;padding:5px;text-align:center;font-size:10px;font-weight:700;color:var(--mu)}
+/* options */
+.opts{display:flex;flex-direction:column;gap:9px}
+.opt{background:#fff;border:2px solid transparent;border-radius:13px;padding:13px 15px;cursor:pointer;display:flex;align-items:center;gap:11px;box-shadow:var(--sh);transition:all .2s;position:relative;overflow:hidden}
+.opt:active{transform:scale(.98)}
+.opt.ok{border-color:var(--ok);background:#f0fff6}.opt.bad{border-color:var(--err);background:#fff5f5}.opt.dim{opacity:.3;pointer-events:none}
+.ol{width:30px;height:30px;border-radius:8px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:var(--p);flex-shrink:0;transition:all .2s}
+.opt.ok .ol{background:var(--ok);color:#fff}.opt.bad .ol{background:var(--err);color:#fff}
+.otx{font-size:13px;font-weight:600;color:var(--txt);line-height:1.4;flex:1}
+.oic{font-size:17px;flex-shrink:0;opacity:0;transition:opacity .25s}
+.opt.ok .oic,.opt.bad .oic{opacity:1}
+.ripple{position:absolute;border-radius:50%;transform:scale(0);animation:ripple-a .5s linear;background:rgba(55,37,121,.1);pointer-events:none}
+@keyframes ripple-a{to{transform:scale(4);opacity:0}}
+/* explanation panel */
+.expl-panel{position:absolute;bottom:0;left:0;right:0;background:#fff;border-radius:20px 20px 0 0;padding:20px 20px max(32px,env(safe-area-inset-bottom,0px) + 20px);box-shadow:0 -8px 32px rgba(55,37,121,.18);transform:translateY(110%);transition:transform .38s cubic-bezier(.4,0,.2,1);z-index:15;overflow:hidden}
+.expl-panel.show{transform:translateY(0)}
+.expl-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.expl-ic{font-size:22px}
+.expl-title{font-size:15px;font-weight:800;color:var(--txt)}
+.expl-body{font-size:13px;font-weight:500;color:var(--mu);line-height:1.6;margin-bottom:16px;padding:12px;background:var(--bg);border-radius:11px}
+.expl-riasec{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.expl-rdim{border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;color:#fff}
+.btn-nx{width:100%;padding:15px;background:var(--p);color:#fff;border:none;border-radius:13px;font-family:'Montserrat',sans-serif;font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 5px 18px rgba(55,37,121,.35);transition:transform .15s}
+.btn-nx:active{transform:scale(.97)}
+
+/* ════ RESULTS ════ */
+#sr{background:var(--bg);overflow-y:auto}
+.r-hdr{background:linear-gradient(155deg,var(--pd),var(--p) 58%,var(--pl));padding:56px 26px 38px;border-radius:0 0 32px 32px;flex-shrink:0;text-align:center}
+.r-badge{width:84px;height:84px;background:rgba(255,255,255,.15);border-radius:24px;display:flex;align-items:center;justify-content:center;font-size:40px;margin:0 auto 14px;animation:badge-pop .6s cubic-bezier(.34,1.56,.64,1)}
+@keyframes badge-pop{from{opacity:0;transform:scale(.3)}to{opacity:1;transform:scale(1)}}
+.r-code{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.15);border-radius:8px;padding:4px 14px;font-size:12px;font-weight:800;color:rgba(255,255,255,.9);letter-spacing:1.5px;margin-bottom:8px}
+.r-name{color:#fff;font-size:24px;font-weight:900;line-height:1.1}
+.r-desc{color:rgba(255,255,255,.7);font-size:13px;font-weight:500;margin-top:9px;line-height:1.55}
+.r-pts-row{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:16px;background:rgba(255,255,255,.12);border-radius:12px;padding:10px 16px}
+.r-pts-n{color:#ffd700;font-size:22px;font-weight:900}
+.r-pts-l{color:rgba(255,255,255,.6);font-size:11px;font-weight:600}
+.r-stats{display:flex;margin-top:16px;border-top:1px solid rgba(255,255,255,.15);padding-top:16px}
+.rst{flex:1;text-align:center;border-right:1px solid rgba(255,255,255,.15)}
+.rst:last-child{border:none}
+.rsn{color:#fff;font-size:20px;font-weight:900}
+.rsl{color:rgba(255,255,255,.45);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+.r-body{padding:18px 18px max(38px,env(safe-area-inset-bottom,0px) + 20px)}
+.rsec{opacity:0;transform:translateY(16px);transition:opacity .5s ease,transform .5s ease}
+.rsec.vis{opacity:1;transform:translateY(0)}
+.stit{font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;margin-top:20px}
+/* achievements */
+.ach-row{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
+.ach-row::-webkit-scrollbar{display:none}
+.ach{background:#fff;border-radius:13px;padding:14px;min-width:108px;flex-shrink:0;box-shadow:var(--sh);display:flex;flex-direction:column;align-items:center;gap:5px;border:2px solid transparent}
+.ach.earned{border-color:var(--warn)}
+.ach-ic{font-size:24px}.ach-t{font-size:11px;font-weight:800;color:var(--txt);text-align:center;line-height:1.3}
+.ach-d{font-size:10px;font-weight:500;color:var(--mu);text-align:center}
+/* percentile */
+.pctile-card{background:#fff;border-radius:14px;padding:16px;box-shadow:var(--sh);display:flex;align-items:center;gap:14px}
+.pctile-ring{position:relative;width:64px;height:64px;flex-shrink:0}
+.pctile-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;color:var(--p)}
+.pctile-info{flex:1}
+.pctile-title{font-size:14px;font-weight:800;color:var(--txt)}
+.pctile-sub{font-size:12px;font-weight:500;color:var(--mu);margin-top:3px;line-height:1.4}
+/* radar */
+.radar-wrap{background:#fff;border-radius:18px;padding:18px;box-shadow:var(--sh);display:flex;flex-direction:column;align-items:center}
+.radar-legend{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-top:12px}
+.rl{display:flex;align-items:center;gap:4px}
+.rl-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.rl-tx{font-size:10px;font-weight:700;color:var(--mu)}
+/* DNA hexagons */
+.dna-wrap{background:#fff;border-radius:16px;padding:20px;box-shadow:var(--sh);text-align:center}
+.dna-wrap p{font-size:11px;font-weight:600;color:var(--mu);margin-top:12px;line-height:1.5}
+/* perf grid */
+.perf-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.pc{background:#fff;border-radius:13px;padding:14px;box-shadow:var(--sh)}
+.pc-ic{font-size:22px;margin-bottom:5px}
+.pc-n{font-size:20px;font-weight:900;color:var(--p)}
+.pc-l{font-size:11px;font-weight:600;color:var(--mu);line-height:1.35;margin-top:2px}
+/* time chart */
+.tc{background:#fff;border-radius:14px;padding:16px;box-shadow:var(--sh)}
+.tc h4{font-size:12px;font-weight:700;color:var(--txt);margin-bottom:12px}
+/* RIASEC bars */
+.rb-card{background:#fff;border-radius:14px;overflow:hidden;box-shadow:var(--sh)}
+.rbi{padding:11px 17px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #f4f0fd}
+.rbi:last-child{border:none}
+.rbi-ic{font-size:18px}.rbi-info{flex:1}
+.rbi-n{font-size:13px;font-weight:700;color:var(--txt)}
+.rbi-d{font-size:10px;font-weight:600;color:var(--mu);margin-top:1px}
+.rbi-bg{height:5px;background:var(--bg);border-radius:3px;margin-top:5px;overflow:hidden}
+.rbi-bar{height:100%;border-radius:3px;width:0;transition:width 1.1s cubic-bezier(.4,0,.2,1)}
+.rbi-pct{font-size:13px;font-weight:800}
+/* careers */
+.cars{display:flex;flex-direction:column;gap:9px}
+.car{background:#fff;border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px;box-shadow:var(--sh)}
+.car-ic{width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.car-t{font-size:13px;font-weight:800;color:var(--txt);margin-bottom:2px}
+.car-d{font-size:11px;color:var(--mu);font-weight:500;line-height:1.35}
+.car-m{flex-shrink:0;text-align:right}
+.cmn{font-size:17px;font-weight:900;color:var(--p)}.cml{font-size:9px;color:var(--mu);font-weight:700;text-transform:uppercase}
+/* insights */
+.ins-list{display:flex;flex-direction:column;gap:8px}
+.ins{background:#fff;border-radius:13px;padding:13px 15px;display:flex;align-items:flex-start;gap:10px;box-shadow:var(--sh)}
+.ins-ic{font-size:19px;flex-shrink:0;margin-top:1px}
+.ins-t{font-size:13px;font-weight:700;color:var(--txt)}
+.ins-d{font-size:11px;color:var(--mu);font-weight:500;margin-top:2px;line-height:1.4}
+/* mtuci */
+.mtuci-box{background:linear-gradient(135deg,var(--p),var(--pl));border-radius:17px;padding:20px}
+.mtuci-box h3{color:#fff;font-size:14px;font-weight:800;margin-bottom:5px}
+.mtuci-box p{color:rgba(255,255,255,.72);font-size:12px;font-weight:500;line-height:1.5;margin-bottom:13px}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.tag{background:rgba(255,255,255,.15);border-radius:100px;padding:5px 12px;font-size:11px;font-weight:700;color:#fff}
+.acts{display:flex;flex-direction:column;gap:9px;margin-top:20px}
+.btn-shr{width:100%;padding:15px;background:var(--p);color:#fff;border:none;border-radius:13px;font-family:'Montserrat',sans-serif;font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 6px 20px rgba(55,37,121,.38)}
+.btn-sav{width:100%;padding:15px;background:#fff;color:var(--p);border:2px solid var(--p);border-radius:13px;font-family:'Montserrat',sans-serif;font-size:15px;font-weight:700;cursor:pointer}
+.btn-rst{width:100%;padding:15px;background:transparent;color:var(--mu);border:2px solid #ddd6f8;border-radius:13px;font-family:'Montserrat',sans-serif;font-size:15px;font-weight:700;cursor:pointer}
+.btn-print{width:100%;padding:15px;background:linear-gradient(135deg,#1a1a2e,#16213e);color:#fff;border:none;border-radius:13px;font-family:'Montserrat',sans-serif;font-size:15px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+
+/* ════ TABLET (карточка) ════ */
+@media(min-width:768px) and (max-width:1023px){
+  html{height:100%;background:linear-gradient(135deg,#100a2e 0%,#251857 40%,#372579 70%,#4e35a8 100%)}
+  body{height:100%;display:grid;place-items:center;background:inherit;padding:20px}
+  #app{width:100%;max-width:640px;height:min(900px,calc(100vh - 40px));border-radius:20px;box-shadow:0 32px 80px rgba(0,0,0,.65),0 0 0 1px rgba(255,255,255,.09);overflow:hidden}
+  #splash{border-radius:20px;max-width:640px;left:50%;transform:translateX(-50%);right:auto;width:640px}
+  #intro-overlay{border-radius:20px}
+  .h-title{font-size:64px}
+  .s-hdr{padding-top:44px}
+  .sim-two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+  .sim-two-col .svis{margin-bottom:0}
+  .perf-grid{grid-template-columns:repeat(4,1fr)}
+}
+
+/* ════ DESKTOP FULL-SCREEN ════ */
+@media(min-width:1024px){
+  html,body{height:100%;overflow:hidden}
+  body{background:var(--pd)}
+  #app{
+    position:fixed;inset:0;width:100%;height:100%;max-width:none;
+    border-radius:0;box-shadow:none;overflow:hidden;
+    background:var(--bg);
+  }
+  #splash{border-radius:0;max-width:none;left:0;right:0;width:100%;transform:none}
+  #intro-overlay{border-radius:0}
+  #snd-btn{bottom:32px;right:32px}
+
+  /* ── HOME full-screen ── */
+  #sh{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr;grid-template-areas:"left right"}
+  #sh .h-top{
+    grid-area:left;padding:80px 60px 60px 80px;
+    display:flex;flex-direction:column;justify-content:center;
+    border-right:1px solid rgba(255,255,255,.1);
+  }
+  #sh .h-bot{
+    grid-area:right;padding:80px 80px 80px 60px;
+    display:flex;flex-direction:column;justify-content:center;gap:0;
+  }
+  .h-logo-svg{display:block;margin-bottom:32px;opacity:.95}
+  .h-badge{display:none}
+  .h-title{font-size:80px;margin-top:0}
+  .h-sub{max-width:480px;font-size:16px;margin-top:14px}
+  .h-method{margin-top:28px;max-width:480px}
+  .chips{margin-top:24px;flex-wrap:wrap;overflow-x:visible}
+  .chip{font-size:12px}
+  .srow{margin-bottom:36px}
+  .sn{font-size:40px}
+  .sl{font-size:12px}
+  .btn{font-size:17px;padding:18px}
+
+  /* ── NAME centered card ── */
+  #sn{background:var(--pd);display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .n-hdr{border-radius:20px 20px 0 0;padding:48px 52px 32px;width:100%;max-width:680px}
+  .n-body{padding:32px 52px max(32px,env(safe-area-inset-bottom) + 20px);width:100%;max-width:680px;background:var(--bg);border-radius:0 0 20px 20px}
+  .gg{grid-template-columns:repeat(8,1fr)}
+  .ri-info{display:none}
+
+  /* ── SIM full-screen ── */
+  .s-hdr{padding:50px 80px 24px}
+  .s-scr{padding:28px 80px 120px;overflow-y:auto}
+  .s-foot{padding:16px 80px 36px}
+  .sim-two-col{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start}
+  .sim-two-col .svis{margin-bottom:0}
+  .slbl{font-size:12px}
+  .stask{font-size:16px}
+  .otx{font-size:15px}
+  .s-pn{font-size:24px}
+  .s-emo{width:64px;height:64px;font-size:34px}
+
+  /* ── RESULTS dashboard ── */
+  .r-hdr{padding:60px 80px 44px;display:grid;grid-template-columns:auto 1fr;gap:48px;align-items:center;text-align:left}
+  .r-hdr-logo{display:flex;flex-direction:column;align-items:center;gap:12px}
+  .r-badge{margin:0}
+  .r-name{font-size:32px}
+  .r-pts-row{justify-content:flex-start;margin-top:20px}
+  .r-stats{margin-top:20px}
+  .r-body{
+    padding:28px 80px max(48px,env(safe-area-inset-bottom) + 24px);
+    display:grid;
+    grid-template-columns:380px 1fr;
+    gap:0 40px;
+    align-items:start;
+  }
+  /* Force sections into grid columns */
+  .r-col-l{display:flex;flex-direction:column;gap:0}
+  .r-col-r{display:flex;flex-direction:column;gap:0}
+  .perf-grid{grid-template-columns:repeat(4,1fr)}
+  .rbi{padding:10px 16px}
+  .car{padding:14px 18px}
+  .ins{padding:14px 18px}
+  .stit{margin-top:18px;font-size:11px}
+  .acts{flex-direction:row;flex-wrap:wrap;gap:12px}
+  .acts button{flex:1;min-width:180px}
+}
+
+/* ════ PRINT REPORT ════ */
+#print-doc{display:none;font-family:'Times New Roman',Times,serif;color:#000;background:#fff}
+#print-doc *{box-sizing:border-box}
+/* A4 single-page compact layout */
+.pr-wrap{padding:8mm 10mm 6mm;font-size:7.5pt;line-height:1.35}
+.pr-head{display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #372579;padding-bottom:5px;margin-bottom:6px}
+.pr-logo{width:145px;flex-shrink:0}
+.pr-title-block{text-align:right}
+.pr-title{font-size:12pt;font-weight:700;letter-spacing:.3px;color:#372579;text-transform:uppercase;margin:0}
+.pr-subtitle{font-size:7pt;color:#555;margin-top:1px}
+.pr-meta{background:#f5f3ff;border:1px solid #c5bae8;border-radius:3px;padding:4px 8px;margin:5px 0;display:grid;grid-template-columns:repeat(4,1fr);gap:2px 10px}
+.pr-meta-row{font-size:7pt;line-height:1.4}
+.pr-meta-row b{display:block;color:#372579;font-weight:700;font-size:6.5pt;text-transform:uppercase;letter-spacing:.3px}
+.pr-body{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:5px}
+.pr-col{min-width:0}
+.pr-sec{margin-bottom:6px}
+.pr-sec-t{font-size:7.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#372579;border-bottom:1px solid #c5bae8;padding-bottom:2px;margin-bottom:4px}
+.pr-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.pr-sb{border:1px solid #ddd;border-radius:3px;padding:3px 5px;text-align:center;background:#fafafa}
+.pr-sb .sv{font-size:11pt;font-weight:700;color:#372579;line-height:1}
+.pr-sb .sl{font-size:6pt;color:#777;text-transform:uppercase;letter-spacing:.2px;margin-top:1px}
+.pr-sim-table{width:100%;border-collapse:collapse;font-size:6.5pt}
+.pr-sim-table th{background:#372579;color:#fff;padding:3px 5px;text-align:left;font-weight:700}
+.pr-sim-table td{padding:2.5px 5px;border-bottom:1px solid #eee}
+.pr-sim-table tr:nth-child(even) td{background:#f9f8ff}
+.pr-bar-row{display:flex;align-items:center;gap:5px;margin-bottom:3px}
+.pr-bar-lbl{width:88px;font-weight:700;font-size:7pt;flex-shrink:0}
+.pr-bar-track{flex:1;height:8px;background:#e8e4f8;border-radius:2px;overflow:hidden}
+.pr-bar-fill{height:100%;border-radius:2px}
+.pr-bar-pct{width:26px;text-align:right;font-weight:700;font-size:7pt}
+.pr-rec{font-size:7pt;line-height:1.5;text-align:justify}
+.pr-rec p{margin-bottom:4px}
+.pr-cars{display:flex;flex-direction:column;gap:3px}
+.pr-car{display:flex;align-items:center;gap:5px;border:1px solid #ddd;border-radius:3px;padding:3px 6px;background:#fafafa}
+.pr-car-ic{font-size:12pt;flex-shrink:0}
+.pr-car-info{flex:1}
+.pr-car-t{font-weight:700;font-size:7pt}
+.pr-car-d{font-size:6pt;color:#777}
+.pr-car-m{font-weight:700;font-size:8pt;color:#372579;flex-shrink:0}
+.pr-progs{display:flex;flex-wrap:wrap;gap:3px;margin-top:3px}
+.pr-prog{background:#f0eefa;border:1px solid #c5bae8;border-radius:3px;padding:2px 7px;font-size:6.5pt;font-weight:700;color:#372579}
+.pr-full{grid-column:1/-1}
+.pr-disclaimer{font-size:6pt;color:#666;line-height:1.45;padding:4px 8px;border:1px solid #e0d8f8;border-radius:3px;background:#faf8ff;margin-top:5px}
+.pr-sign{display:flex;justify-content:space-between;margin-top:6px;padding-top:5px;border-top:1px solid #ccc}
+.pr-sign-b{text-align:center;min-width:130px;font-size:6.5pt;color:#555}
+.pr-sign-line{border-top:1px solid #000;margin:14px 10px 3px}
+.pr-footer{display:flex;justify-content:space-between;font-size:6pt;color:#aaa;margin-top:4px;padding-top:3px;border-top:1px solid #eee}
+@media print{
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+  @page{size:A4 portrait;margin:0}
+  html,body{height:auto!important;overflow:visible!important;display:block!important;background:white!important}
+  #app,#snd-btn,#confetti{display:none!important}
+  #print-doc{display:block!important}
+  .pr-wrap{padding:7mm 9mm 5mm;font-size:7pt}
+}
+.pr-career-item{border:1px solid #ccc;border-radius:4px;padding:6px 9px}
+.pr-career-item .ct{font-weight:700;margin-bottom:2px}
+.pr-career-item .cm{color:#372579;font-weight:700}
+.pr-programs{list-style:none;padding:0}
+.pr-programs li{padding:4px 0;border-bottom:1px solid #eee;font-size:9.5pt;display:flex;align-items:center;gap:6px}
+.pr-programs li::before{content:'▸';color:#372579;font-size:10pt}
+.pr-disclaimer{margin-top:14px;padding:8px 12px;border:1px solid #ccc;border-radius:4px;background:#fffef0;font-size:7.5pt;color:#555;line-height:1.5}
+.pr-footer{margin-top:12px;border-top:1px solid #ccc;padding-top:8px;display:flex;justify-content:space-between;font-size:8pt;color:#777}
+.pr-sign{margin-top:14px;display:flex;justify-content:space-between;font-size:9pt}
+.pr-sign-block{text-align:center;min-width:180px}
+.pr-sign-line{border-top:1px solid #000;margin-top:24px;margin-bottom:4px}
+@media print{
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+  html,body{height:auto!important;overflow:visible!important;display:block!important;background:white!important;min-height:unset}
+  #app,#snd-btn,#confetti{display:none!important}
+  #print-doc{display:block!important;padding:15mm 18mm 14mm}
+}
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash">
+  <div class="sp-logo-svg" id="sp-logo-svg"></div>
+  <div class="sp-title">ПрофКвест</div>
+  <div class="sp-sub">Профориентация · RIASEC</div>
+  <div class="sp-bar"><div class="sp-fill"></div></div>
+</div>
+
+<canvas id="confetti"></canvas>
+<div id="app">
+<button id="snd-btn" onclick="toggleSound()">🔊</button>
+<!-- INTRO OVERLAY -->
+<div id="intro-overlay">
+  <div class="io-emo" id="io-emo"></div>
+  <div class="io-lbl">Ты примеряешь роль</div>
+  <div class="io-name" id="io-name"></div>
+  <div class="io-fact" id="io-fact"></div>
+  <div class="io-bar"><div class="io-fill" id="io-fill"></div></div>
+</div>
+
+<!-- ══ HOME ══ -->
+<div id="sh" class="scr on">
+  <canvas id="particles" style="position:absolute;inset:0;z-index:0"></canvas>
+  <div class="h-top">
+    <div class="h-logo-svg" id="h-logo-svg" style="display:none"></div>
+    <div class="h-badge"><span>🎓</span><span>СКФ МТУСИ</span></div>
+    <div class="h-title">Проф<em>Квест</em></div>
+    <div class="h-sub">Реальные рабочие задачи — честный RIASEC-профиль за 15 минут</div>
+    <div class="h-method">
+      <div class="h-mic">🧬</div>
+      <div class="h-mtx"><b>Методика Холланда (RIASEC)</b><span>Международный стандарт · 6 типов личности · 50+ стран</span></div>
+    </div>
+    <div class="chips">
+      <div class="chip">💻 Программист</div><div class="chip">🔍 Следователь</div>
+      <div class="chip">🩺 Врач</div><div class="chip">💼 Предприниматель</div>
+      <div class="chip">📡 Инженер</div><div class="chip">🎨 Дизайнер</div>
+      <div class="chip">📊 Аналитик</div><div class="chip">🛡 ИБ-специалист</div>
+    </div>
+  </div>
+  <div class="h-bot">
+    <div class="srow">
+      <div class="s1"><div class="sn">8</div><div class="sl">симуляций</div></div>
+      <div class="s1"><div class="sn">6</div><div class="sl">RIASEC-типов</div></div>
+      <div class="s1"><div class="sn">15</div><div class="sl">минут</div></div>
+    </div>
+    <button class="btn btn-w" onclick="haptic([5]);go('sn')">Начать квест →</button>
+    <button class="btn btn-g" onclick="showInfo()">Что такое RIASEC?</button>
+  </div>
+</div>
+
+<!-- ══ NAME ══ -->
+<div id="sn" class="scr">
+  <div class="n-hdr">
+    <button class="back" onclick="back()">←</button>
+    <h2>Расскажи о себе</h2>
+    <p>Сформируем точный профиль под тебя</p>
+  </div>
+  <div class="n-body">
+    <label class="lbl">Твоё имя</label>
+    <input class="inp" id="inp" type="text" placeholder="Введи имя" autocomplete="given-name" oninput="chk()" style="-webkit-user-select:text;user-select:text">
+    <label class="lbl">Класс или курс</label>
+    <div class="gg">
+      <button class="gc" onclick="sg(this,'8')">8 кл</button><button class="gc" onclick="sg(this,'9')">9 кл</button>
+      <button class="gc" onclick="sg(this,'10')">10 кл</button><button class="gc" onclick="sg(this,'11')">11 кл</button>
+      <button class="gc" onclick="sg(this,'1к')">1 курс</button><button class="gc" onclick="sg(this,'2к')">2 курс</button>
+      <button class="gc" onclick="sg(this,'3к')">3 курс</button><button class="gc" onclick="sg(this,'—')">Другое</button>
+    </div>
+    <div class="ri-info">
+      <h4>🧬 Что измеряет квест</h4>
+      <div class="ri-dims">
+        <div class="ri-d">🔧 R — Реалист</div><div class="ri-d">🔬 I — Исследователь</div>
+        <div class="ri-d">🎨 A — Творец</div><div class="ri-d">🤝 S — Социальный</div>
+        <div class="ri-d">🚀 E — Лидер</div><div class="ri-d">📋 C — Организатор</div>
+      </div>
+    </div>
+    <button class="btn btn-p" id="bst" onclick="start()" disabled>Начать 8 симуляций →</button>
+  </div>
+</div>
+
+<!-- ══ SIM ══ -->
+<div id="ss" class="scr"></div>
+
+<!-- ══ RESULTS ══ -->
+<div id="sr" class="scr"></div>
+
+</div>
+
+<!-- PRINT REPORT -->
+<div id="print-doc"></div>
+
+<script>
+/* ════════════════════════════════════
+   DATA
+════════════════════════════════════ */
+const RC={R:'#e74c3c',I:'#2980b9',A:'#8e44ad',S:'#27ae60',E:'#e67e22',C:'#16a085'};
+const RLBL={R:'Реалист',I:'Исследователь',A:'Творец',S:'Социальный',E:'Лидер',C:'Организатор'};
+const RIC={R:'🔧',I:'🔬',A:'🎨',S:'🤝',E:'🚀',C:'📋'};
+const RDSC={
+  R:'Практические задачи, техника, системы',
+  I:'Анализ, исследование, поиск закономерностей',
+  A:'Творчество, дизайн, нестандартный взгляд',
+  S:'Общение, помощь людям, командная работа',
+  E:'Лидерство, управление, предпринимательство',
+  C:'Порядок, точность, организация процессов',
+};
+
+const SIMS=[
+  {prof:'Программист',icon:'💻',tag:'Команда разработки',dims:['I','R'],diff:2,
+   fact:'Средняя зарплата разработчика в России — 190 000 ₽/мес',
+   task:'Программа должна выводить числа от 1 до 5, но выводит только 1, 2, 3, 4. Найди ошибку:',
+   html:`<div class="code"><span class="cl"><span class="ck">i</span> = <span class="cn">1</span></span><span class="cl"><span class="ck">while</span> i <span class="co">&lt;</span> <span class="cn">5</span>:  <span class="cmt"># ← здесь?</span></span><span class="cl">    <span class="cf">print</span>(i)</span><span class="cl">    i = i + <span class="cn">1</span>    <span class="cmt"># ← или здесь?</span></span></div>`,
+   opts:[
+     {t:'Строка 1: нужно начать с i = 0',r:{I:1,R:1},ok:false,expl:null},
+     {t:'Строка 2: нужно i ≤ 5 вместо i < 5',r:{I:3,R:2,C:1},ok:true,
+      expl:'При i=5 условие i<5 становится ложным и цикл завершается, не напечатав 5. Замена на i<=5 позволяет выполниться при i=5.'},
+     {t:'Строка 4: нужно прибавлять 2, а не 1',r:{R:1,A:1},ok:false,expl:null},
+   ]},
+
+  {prof:'Следователь',icon:'🔍',tag:'Уголовный розыск',dims:['I','C'],diff:1,
+   fact:'В МВД России работает более 900 000 сотрудников',
+   task:'Из сейфа пропала флешка с данными. Изучи улики и назови виновного:',
+   html:`<div><div class="clue"><span class="ci">🕐</span><span class="ct">Пропажа обнаружена в <b>15:00</b></span></div><div class="clue"><span class="ci">👁</span><span class="ct">Охранник видел <b>подозреваемого А</b> у сейфа в <b>14:50</b></span></div><div class="clue"><span class="ci">📋</span><span class="ct"><b>Подозреваемый Б</b> на совещании с 14:00 до 16:00 — 5 свидетелей</span></div><div class="clue"><span class="ci">🖐</span><span class="ct">На замке — <b>отпечатки подозреваемого А</b></span></div><div class="clue"><span class="ci">🏠</span><span class="ct"><b>Подозреваемый В</b> утверждает, что был дома — алиби не подтверждено</span></div></div>`,
+   opts:[
+     {t:'Подозреваемый А — был у сейфа, его отпечатки',r:{I:3,C:2},ok:true,
+      expl:'Физическое присутствие (свидетель) + биометрические улики (отпечатки) — классическая доказательная база. У Б подтверждённое алиби, у В — только слова.'},
+     {t:'Подозреваемый Б — мог покинуть совещание',r:{A:1,E:1},ok:false,expl:null},
+     {t:'Подозреваемый В — нет алиби',r:{I:1,C:1},ok:false,expl:null},
+   ]},
+
+  {prof:'Врач',icon:'🩺',tag:'Приёмный покой',dims:['I','S'],diff:3,
+   fact:'Аппендицит — одна из самых частых причин экстренных операций в мире',
+   task:'Пациент, 19 лет. Острая боль в правом боку, тошнота, 37.8°C, усиливается при движении:',
+   html:`<div><div class="clue"><span class="ci">🤒</span><span class="ct">Острая боль в <b>правом нижнем боку</b>, 12 часов</span></div><div class="clue"><span class="ci">🌡</span><span class="ct">Температура <b>37.8°C</b>, субфебрильная</span></div><div class="clue"><span class="ci">🤢</span><span class="ct">Тошнота, <b>отсутствие аппетита</b></span></div><div class="clue"><span class="ci">🚶</span><span class="ct">Боль <b>резко усиливается</b> при ходьбе и надавливании</span></div><div class="clue"><span class="ci">💊</span><span class="ct">Ранее здоров, хронических заболеваний нет</span></div></div>`,
+   opts:[
+     {t:'Пищевое отравление — тошнота и температура',r:{S:2,I:1},ok:false,expl:null},
+     {t:'Острый аппендицит — классическая локализация и клиника',r:{I:3,R:1,C:1},ok:true,
+      expl:'Триада: боль в правом нижнем боку + субфебрилитет + тошнота при усилении от движения — классическая картина острого аппендицита. Требует немедленной госпитализации.'},
+     {t:'Почечная колика — боль в боку',r:{I:2,C:1},ok:false,expl:null},
+   ]},
+
+  {prof:'Предприниматель',icon:'💼',tag:'Запуск стартапа',dims:['E','A'],diff:2,
+   fact:'Средний возраст основателя успешного стартапа — 42 года, а не 22',
+   task:'Есть 200 000 ₽ для открытия кофейни в ТЦ. Как распределить бюджет?',
+   html:`<div style="background:#f8f5ff;border-radius:10px;padding:14px"><div style="font-weight:700;font-size:13px;color:var(--p);margin-bottom:7px">💡 Ситуация</div><div style="font-size:12px;color:#555;line-height:1.6">Место в ТЦ найдено. Поставщики готовы. Есть хорошая цена на кофемашину. Нужно принять первое ключевое решение о распределении стартового капитала.</div></div>`,
+   opts:[
+     {t:'60% — лучшее место, 30% — оборудование, 10% — реклама',r:{E:2,R:1},ok:false,expl:null},
+     {t:'40% — оборудование, 30% — аренда, 20% — сырьё, 10% — реклама',r:{E:2,C:2,I:1,R:1},ok:true,
+      expl:'Сбалансированное распределение — ключ к выживанию. Качественное оборудование обеспечивает продукт, умеренная аренда снижает burn rate, запас сырья даёт страховку первых недель.'},
+     {t:'50% — маркетинг, 30% — аренда, 20% — оборудование',r:{E:3,A:3},ok:false,expl:null},
+   ]},
+
+  {prof:'Инженер связи',icon:'📡',tag:'Обслуживание сети',dims:['R','C'],diff:2,
+   fact:'Мировой интернет-трафик удваивается каждые 2 года — и инженеры не успевают',
+   task:'В офисе один ПК потерял интернет, остальные работают. Найди причину:',
+   html:`<div class="net"><div class="nc"><div class="nb" style="background:var(--p)">🌐 Интернет</div></div><div class="nl"></div><div class="nc"><div class="nb" style="background:#4e35a8">📡 Роутер</div><div class="nlb">✓ работает</div></div><div class="nl"></div><div class="nc"><div class="nb" style="background:#4e35a8">🔀 Коммутатор</div><div class="nlb">✓ работает</div></div><div class="nr" style="margin-top:2px"><div class="nc"><div class="nl"></div><div class="nb" style="background:#27ae60;font-size:10px">💻 ПК-1</div><div class="nlb">✓</div></div><div class="nc"><div class="nl"></div><div class="nb" style="background:#27ae60;font-size:10px">💻 ПК-2</div><div class="nlb">✓</div></div><div class="nc"><div class="nl"></div><div class="nb" style="background:#e74c3c;font-size:10px">💻 ПК-3</div><div class="nlb">✗ нет</div></div><div class="nc"><div class="nl"></div><div class="nb" style="background:#27ae60;font-size:10px">💻 ПК-4</div><div class="nlb">✓</div></div></div></div>`,
+   opts:[
+     {t:'Перезагрузить роутер — общая проблема сети',r:{R:1,I:1},ok:false,expl:null},
+     {t:'Проблема в кабеле или сетевой карте ПК-3',r:{R:3,I:2,C:2},ok:true,
+      expl:'Если проблема у единственного устройства — роутер и коммутатор исключаются (остальные работают). Значит, дефект на последнем участке: кабель до ПК-3 или его NIC.'},
+     {t:'Сбросить коммутатор до заводских настроек',r:{R:2,C:1},ok:false,expl:null},
+   ]},
+
+  {prof:'UX-дизайнер',icon:'🎨',tag:'Продуктовая команда',dims:['A','S'],diff:1,
+   fact:'Amazon потерял $300 млн/год из-за одной неудачно размещённой кнопки',
+   task:'Пользователи не могут найти кнопку "Оформить заказ". Лучшее решение:',
+   html:`<div class="ui-mock"><div class="ui-nav"><span>🛒 Магазин</span><span>Корзина (3)</span></div><div class="ui-content"><div class="ui-hero">Баннер акции — 50% скидка!</div><div class="ui-items"><div class="ui-item">📦 Товар 1<br><b>890 ₽</b></div><div class="ui-item">📦 Товар 2<br><b>1 290 ₽</b></div><div class="ui-item">📦 Товар 3<br><b>650 ₽</b></div><div class="ui-item">📦 Товар 4<br><b>2 100 ₽</b></div></div><div class="ui-cta">↓ Кнопка заказа где-то внизу...</div></div></div>`,
+   opts:[
+     {t:'Добавить мигающую анимацию на кнопку',r:{A:1,R:1},ok:false,expl:null},
+     {t:'Вынести кнопку выше первого экрана, убрать отвлекающий баннер',r:{A:3,S:2,I:2},ok:true,
+      expl:'Закон UX: CTA (Call-to-Action) должен быть в зоне первого экрана без конкурирующих элементов. Баннер-акция крадёт фокус. Убрать лишнее — сильнее мигания.'},
+     {t:'Сделать кнопку красной и утроить размер',r:{A:2,E:1},ok:false,expl:null},
+   ]},
+
+  {prof:'Аналитик данных',icon:'📊',tag:'Отдел аналитики',dims:['I','C'],diff:3,
+   fact:'К 2025 году дефицит аналитиков данных в России — более 1 млн специалистов',
+   task:'Продажи упали на 30% в марте. Изучи данные и выбери главную гипотезу:',
+   html:`<table class="dtbl"><tr><th>Показатель</th><th>Фев.</th><th>Март</th><th>Δ</th></tr><tr><td>Продажи</td><td>850к ₽</td><td>595к ₽</td><td class="dn">▼30%</td></tr><tr><td>Трафик</td><td>24 000</td><td>27 600</td><td class="up">▲15%</td></tr><tr><td>Конверсия</td><td>3.2%</td><td>1.9%</td><td class="dn">▼41%</td></tr><tr><td>Ср. чек</td><td>1 130₽</td><td>1 110₽</td><td class="dn">▼2%</td></tr></table><div style="margin-top:10px;background:#fef9e7;border-radius:8px;padding:8px 12px;font-size:11px;font-weight:600;color:#856404">⚡ 14 марта конкурент выпустил аналогичный продукт</div>`,
+   opts:[
+     {t:'Сезонный спад — подождать и наблюдать',r:{C:1,S:1},ok:false,expl:null},
+     {t:'Технический баг — конверсия резко упала',r:{I:2,R:2,C:1},ok:false,expl:null},
+     {t:'Конкурент перехватывает трафик — трафик растёт, конверсия падает',r:{I:3,C:3,E:1},ok:true,
+      expl:'Паттерн однозначный: трафик вырос (+15%) — люди приходят. Но конверсия рухнула (-41%) — они сравнивают и уходят к конкуренту. Корреляция с датой запуска конкурента подтверждает гипотезу.'},
+   ]},
+
+  {prof:'ИБ-специалист',icon:'🛡',tag:'Служба безопасности',dims:['I','R'],diff:2,
+   fact:'Каждые 39 секунд в мире происходит новая кибератака',
+   task:'Сотрудник принёс это письмо. Определи угрозу и правильные действия:',
+   html:`<div class="email"><div class="email-hdr"><div class="erow"><span class="elbl">От:</span><span class="eval">support@sberbank-security.ru</span></div><div class="erow"><span class="elbl">Кому:</span><span class="eval">employee@company.ru</span></div><div class="erow"><span class="elbl">Тема:</span><span class="eval">⚠️ СРОЧНО: Аккаунт заблокирован</span></div></div><div class="email-body">Уважаемый клиент!<br><br>Ваш аккаунт <b>заблокирован</b>. Войдите в течение <b>2 часов</b>:<br><br><span class="elink">→ sber-bank-unlock.ru/login</span><br><br>Иначе аккаунт будет удалён.<div class="red-flag">⚠️ Домен отправителя ≠ sberbank.ru</div></div></div>`,
+   opts:[
+     {t:'Фишинг — заблокировать, не переходить, уведомить ИБ-службу',r:{I:3,R:2,C:2},ok:true,
+      expl:'3 признака фишинга: поддельный домен (sberbank-security.ru ≠ sberbank.ru), искусственная срочность, угроза потерей аккаунта. Правило ИБ: не переходить + уведомить СИБ.'},
+     {t:'Легитимное письмо — сотруднику нужно войти',r:{},ok:false,expl:null},
+     {t:'Спам — просто удалить, не сообщать',r:{C:1,I:1},ok:false,expl:null},
+   ]},
+];
+
+const PROF=[
+  {code:'IR',ic:'⚡',name:'Технический Исследователь',desc:'Ты мыслишь системно и методично. Технические задачи — твоя стихия. Идёшь глубже там, где другие останавливаются.',
+   cars:[{t:'Разработчик ПО',d:'Создаёт приложения и сервисы',m:95,ic:'💻',bg:'#eef6ff'},{t:'Инженер сетей',d:'Телеком-инфраструктура',m:91,ic:'📡',bg:'#f0eefa'},{t:'Специалист ИБ',d:'Защита от кибератак',m:88,ic:'🛡',bg:'#fff0f0'},{t:'Исследователь ИИ',d:'ML-алгоритмы',m:83,ic:'🤖',bg:'#fef9e7'}],
+   mtuci:['Информационные технологии','Информационная безопасность','Телекоммуникации']},
+  {code:'IC',ic:'🔬',name:'Системный Аналитик',desc:'Ты видишь паттерны там, где другие видят хаос. Работаешь с данными точно и методично.',
+   cars:[{t:'Аналитик данных',d:'Большие объёмы данных',m:96,ic:'📊',bg:'#e8f8f5'},{t:'Системный аналитик',d:'IT-системы для бизнеса',m:90,ic:'🗂',bg:'#f0eefa'},{t:'QA-инженер',d:'Качество продуктов',m:85,ic:'✅',bg:'#f0fff6'},{t:'DevOps',d:'Автоматизация разработки',m:80,ic:'⚙️',bg:'#fef9e7'}],
+   mtuci:['Математика и информатика','Системный анализ','Прикладная информатика']},
+  {code:'AS',ic:'🎨',name:'Творческий Технолог',desc:'Ты создаёшь то, чего раньше не было. Техническая грамотность + нестандартное видение.',
+   cars:[{t:'UX/UI-дизайнер',d:'Удобные интерфейсы',m:94,ic:'🎨',bg:'#f5f0ff'},{t:'Продуктовый дизайнер',d:'Цифровые продукты',m:89,ic:'✨',bg:'#fef9e7'},{t:'Frontend',d:'Визуальная часть приложений',m:84,ic:'🖥',bg:'#eef6ff'},{t:'Game Designer',d:'Игровые механики',m:79,ic:'🎮',bg:'#fff0f5'}],
+   mtuci:['Медиатехнологии','Цифровые коммуникации','Веб-разработка']},
+  {code:'SE',ic:'🤝',name:'Социальный Лидер',desc:'Твоя сила — люди. Умеешь вести команды, слышать других и превращать идеи в результаты.',
+   cars:[{t:'IT-менеджер',d:'Команды разработчиков',m:93,ic:'📋',bg:'#e8f8f0'},{t:'Product Manager',d:'Стратегия продукта',m:89,ic:'🎯',bg:'#fef0e8'},{t:'HR-tech',d:'Цифровые HR-процессы',m:83,ic:'👥',bg:'#f0f8ff'},{t:'Edtech',d:'Образовательные продукты',m:78,ic:'🎓',bg:'#f0fff6'}],
+   mtuci:['Менеджмент в телекоммуникациях','Цифровая экономика','Управление IT-проектами']},
+  {code:'EC',ic:'🚀',name:'Предприниматель-Стратег',desc:'Ты думаешь масштабами. Видишь возможности там, где другие видят ограничения.',
+   cars:[{t:'IT-предприниматель',d:'Технологические стартапы',m:96,ic:'💼',bg:'#fef9e7'},{t:'CPO',d:'Стратегия продукта',m:91,ic:'📈',bg:'#e8f8f0'},{t:'Венчурный аналитик',d:'Оценка IT-проектов',m:85,ic:'💰',bg:'#fff0e8'},{t:'IT-маркетолог',d:'Продвижение tech-продуктов',m:79,ic:'📱',bg:'#f0eefa'}],
+   mtuci:['Электронный бизнес','Цифровой маркетинг','Управление инновациями']},
+  {code:'RC',ic:'🔩',name:'Инженер-Практик',desc:'Ты строишь надёжные системы. Точность, практический результат — твои ценности.',
+   cars:[{t:'Сетевой инженер',d:'Сети связи',m:95,ic:'🔌',bg:'#e8f0ff'},{t:'DevOps',d:'Инфраструктура',m:90,ic:'⚙️',bg:'#fef9e7'},{t:'Системный администратор',d:'IT-инфраструктура',m:86,ic:'🖥',bg:'#f0f8ff'},{t:'ИБ-инженер',d:'Настройка защиты систем',m:81,ic:'🛡',bg:'#fff0f0'}],
+   mtuci:['Телекоммуникации','Инфокоммуникационные технологии','Сети связи']},
+];
+
+const ACH=[
+  {id:'perfect',ic:'🏆',t:'Идеальный результат',d:'Все 8 верно'},
+  {id:'speed',ic:'⚡',t:'Молния',d:'Среднее < 15с'},
+  {id:'streak3',ic:'🔥',t:'На кураже',d:'3 подряд'},
+  {id:'streak5',ic:'🚀',t:'Неудержимый',d:'5 подряд'},
+  {id:'first',ic:'⭐',t:'Первый квест',d:'Завершён'},
+];
+
+/* ════════════════════════════════════
+   STATE
+════════════════════════════════════ */
+const ST={name:'',grade:'',cur:0,ans:[],riasec:{R:0,I:0,A:0,S:0,E:0,C:0},t0:0};
+let hist=['sh'],grade='',tmrI=null,tmrSec=0,answered=false,streak=0,maxStreak=0,totalPts=0;
+let soundOn=localStorage.getItem('pq_sound')!=='0';
+
+/* ════════════════════════════════════
+   AUDIO
+════════════════════════════════════ */
+let _ac=null;
+function ac(){try{if(!_ac)_ac=new(window.AudioContext||window.webkitAudioContext)();return _ac;}catch(e){return null;}}
+function playNotes(notes){
+  if(!soundOn)return;
+  const ctx=ac();if(!ctx)return;
+  let t=ctx.currentTime;
+  notes.forEach(([f,d,type='sine',vol=0.07])=>{
+    const o=ctx.createOscillator(),g=ctx.createGain();
+    o.connect(g);g.connect(ctx.destination);
+    o.type=type;o.frequency.value=f;
+    g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(0.001,t+d);
+    o.start(t);o.stop(t+d+.05);t+=d*.75;
+  });
+}
+const sndOk=()=>playNotes([[523,.09],[659,.09],[784,.16]]);
+const sndBad=()=>playNotes([[350,.12,'sawtooth',.05],[280,.16,'sawtooth',.04]]);
+const sndTick=()=>playNotes([[800,.04,'square',.03]]);
+const sndDone=()=>playNotes([[523,.08],[659,.08],[784,.08],[1047,.24]]);
+const sndStr=()=>playNotes([[659,.06],[784,.06],[1047,.12]]);
+
+function toggleSound(){
+  soundOn=!soundOn;
+  localStorage.setItem('pq_sound',soundOn?'1':'0');
+  document.getElementById('snd-btn').textContent=soundOn?'🔊':'🔇';
+  if(soundOn)sndOk();
+}
+
+/* ════════════════════════════════════
+   HAPTICS
+════════════════════════════════════ */
+function haptic(p){try{navigator.vibrate&&navigator.vibrate(p);}catch(e){}}
+
+/* ════════════════════════════════════
+   PARTICLES
+════════════════════════════════════ */
+let partRAF=null;
+function startParticles(){
+  const cv=document.getElementById('particles');if(!cv)return;
+  const scr=document.getElementById('sh');
+  cv.width=scr.offsetWidth||390;cv.height=scr.offsetHeight||844;
+  const ctx=cv.getContext('2d');
+  const pts=Array.from({length:45},()=>({x:Math.random()*cv.width,y:Math.random()*cv.height,vx:(Math.random()-.5)*.4,vy:(Math.random()-.5)*.4,r:Math.random()*1.5+.5}));
+  const draw=()=>{
+    partRAF=requestAnimationFrame(draw);
+    ctx.clearRect(0,0,cv.width,cv.height);
+    pts.forEach(p=>{
+      p.x+=p.vx;p.y+=p.vy;
+      if(p.x<0||p.x>cv.width)p.vx*=-1;
+      if(p.y<0||p.y>cv.height)p.vy*=-1;
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle='rgba(255,255,255,.35)';ctx.fill();
+    });
+    pts.forEach((a,i)=>pts.slice(i+1).forEach(b=>{
+      const d=Math.hypot(a.x-b.x,a.y-b.y);
+      if(d<90){ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.strokeStyle=`rgba(255,255,255,${(1-d/90)*.12})`;ctx.lineWidth=1;ctx.stroke();}
+    }));
+  };
+  draw();
+}
+function stopParticles(){if(partRAF){cancelAnimationFrame(partRAF);partRAF=null;}}
+
+/* ════════════════════════════════════
+   NAV + SWIPE
+════════════════════════════════════ */
+let touchX0=0,touchY0=0;
+document.addEventListener('touchstart',e=>{touchX0=e.touches[0].clientX;touchY0=e.touches[0].clientY;},{passive:true});
+document.addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX-touchX0;
+  const dy=Math.abs(e.changedTouches[0].clientY-touchY0);
+  // only horizontal swipe (not vertical scroll), not on sim screen
+  const cur=document.querySelector('.scr.on');
+  if(dx>80&&dy<40&&cur&&cur.id!=='sh'&&cur.id!=='ss'&&cur.id!=='sr')back();
+},{passive:true});
+
+function go(id){
+  const cur=document.querySelector('.scr.on'),nxt=document.getElementById(id);
+  if(!nxt||cur===nxt)return;
+  if(cur.id==='sh')stopParticles();
+  cur.classList.add('out');cur.classList.remove('on');
+  setTimeout(()=>cur.classList.remove('out'),340);
+  nxt.classList.add('on');hist.push(id);
+}
+function back(){
+  if(hist.length<=1)return;
+  // no back during active quiz
+  const cur=document.querySelector('.scr.on');
+  if(cur&&cur.id==='ss')return;
+  hist.pop();
+  const prev=hist[hist.length-1];
+  cur.classList.remove('on');
+  document.getElementById(prev).classList.add('on');
+  if(prev==='sh')startParticles();
+}
+
+/* ════════════════════════════════════
+   FORM
+════════════════════════════════════ */
+function sg(el,v){document.querySelectorAll('.gc').forEach(c=>c.classList.remove('on'));el.classList.add('on');grade=v;chk();haptic([5]);}
+function chk(){document.getElementById('bst').disabled=!(document.getElementById('inp').value.trim().length>=2&&grade);}
+
+/* ════════════════════════════════════
+   INTRO OVERLAY
+════════════════════════════════════ */
+function showIntro(simIdx,cb){
+  const sim=SIMS[simIdx];
+  const ov=document.getElementById('intro-overlay');
+  // reset bounce animation
+  const emoEl=document.getElementById('io-emo');
+  emoEl.style.animation='none';
+  emoEl.textContent=sim.icon;
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{ emoEl.style.animation=''; });
+  });
+  document.getElementById('io-name').textContent=sim.prof;
+  document.getElementById('io-fact').textContent='💡 '+sim.fact;
+  const fill=document.getElementById('io-fill');
+  fill.style.transition='none';fill.style.width='0';
+  ov.classList.add('show');
+  setTimeout(()=>{fill.style.transition='width 1.2s linear';fill.style.width='100%';},60);
+  setTimeout(()=>{ov.classList.remove('show');setTimeout(cb,260);},1500);
+}
+
+/* ════════════════════════════════════
+   QUEST
+════════════════════════════════════ */
+function start(){
+  ST.name=document.getElementById('inp').value.trim();
+  ST.grade=grade;
+  ST.cur=0;ST.ans=[];ST.riasec={R:0,I:0,A:0,S:0,E:0,C:0};
+  streak=0;maxStreak=0;totalPts=0;answered=false;
+  go('ss');
+  showIntro(0,()=>renderSim());
+}
+
+function renderSim(){
+  const sim=SIMS[ST.cur];answered=false;ST.t0=Date.now();
+  const letters=['А','Б','В'];
+  const CIRC=2*Math.PI*22;
+  const diffStars='⭐'.repeat(sim.diff)+'☆'.repeat(3-sim.diff);
+
+  const dots=SIMS.map((_,i)=>{
+    let cls='';
+    if(i<ST.cur)cls=ST.ans[i]?.ok?'ok':'bad';
+    else if(i===ST.cur)cls='cur';
+    return `<div class="pd ${cls}"></div>`;
+  }).join('');
+
+  const dimBadges=sim.dims.map(d=>`<div class="dim-b">${RIC[d]} ${RLBL[d]}</div>`).join('');
+
+  const opts=sim.opts.map((o,i)=>`
+<div class="opt" id="o${i}" onclick="pick(${i},event)">
+  <div class="ol">${letters[i]}</div>
+  <div class="otx">${o.t}</div>
+  <div class="oic" id="oi${i}"></div>
+</div>`).join('');
+
+  document.getElementById('ss').innerHTML=`
+<div class="s-hdr" style="position:relative">
+  <div class="s-top">
+    <div class="s-left">
+      <div class="s-step">Симуляция ${ST.cur+1} из ${SIMS.length}</div>
+      <div class="pts-badge">⭐ <span id="pts-live">${totalPts}</span></div>
+    </div>
+    <div class="tmr">
+      <svg width="52" height="52" viewBox="0 0 52 52">
+        <circle cx="26" cy="26" r="22" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="4"/>
+        <circle id="tring" cx="26" cy="26" r="22" fill="none" stroke="white" stroke-width="4"
+          stroke-dasharray="${CIRC.toFixed(1)}" stroke-dashoffset="0" stroke-linecap="round"
+          transform="rotate(-90 26 26)" style="transition:stroke .5s"/>
+      </svg>
+      <div class="tmr-n" id="tn">60</div>
+    </div>
+  </div>
+  <div class="diff-row">
+    <div style="display:flex;gap:3px">${[1,2,3].map(n=>`<div style="width:10px;height:10px;border-radius:50%;background:${n<=sim.diff?'#ffd700':'rgba(255,255,255,.25)'}"></div>`).join('')}</div>
+    <div class="diff-lbl">${['','Легко','Средне','Сложно'][sim.diff]}</div>
+  </div>
+  <div class="pdots">${dots}</div>
+  <div class="s-prof">
+    <div class="s-emo">${sim.icon}</div>
+    <div>
+      <div class="s-pl">профессия</div>
+      <div class="s-pn">${sim.prof}</div>
+      <div class="s-pt">${sim.tag}</div>
+      <div class="s-dims">${dimBadges}</div>
+    </div>
+  </div>
+</div>
+<div class="s-scr">
+  <div class="slbl">Задача</div>
+  <div class="stask">${sim.task}</div>
+  <div class="sim-two-col">
+    <div class="svis">${sim.html}</div>
+    <div>
+      <div class="slbl">Твой ответ</div>
+      <div class="opts">${opts}</div>
+    </div>
+  </div>
+</div>
+<div class="expl-panel" id="expl-panel">
+  <div class="expl-head">
+    <div class="expl-ic" id="expl-ic"></div>
+    <div class="expl-title" id="expl-title"></div>
+  </div>
+  <div class="expl-body" id="expl-body"></div>
+  <div class="expl-riasec" id="expl-riasec"></div>
+  <button class="btn-nx" onclick="nextSim()">${ST.cur<SIMS.length-1?'Следующая симуляция →':'Посмотреть результат →'}</button>
+</div>`;
+
+  startTimer();
+}
+
+function startTimer(){
+  clearInterval(tmrI);tmrSec=60;tick();
+  tmrI=setInterval(()=>{
+    tmrSec--;tick();
+    if(tmrSec===10||tmrSec===5)sndTick();
+    if(tmrSec<=0){clearInterval(tmrI);if(!answered)autoEnd();}
+  },1000);
+}
+function tick(){
+  const n=document.getElementById('tn'),r=document.getElementById('tring');
+  if(!n)return;
+  n.textContent=tmrSec;
+  const C=2*Math.PI*22;
+  if(r){r.style.strokeDashoffset=C*(1-tmrSec/60);r.style.stroke=tmrSec<=10?'#e74c3c':tmrSec<=20?'#f39c12':'white';}
+}
+function autoEnd(){
+  answered=true;streak=0;
+  ST.ans.push({i:-1,ok:false,ms:60000,r:{}});
+  openExplPanel(null,null,0);
+}
+
+function pick(idx,ev){
+  if(answered)return;
+  answered=true;clearInterval(tmrI);haptic([6]);
+  if(ev)addRipple(ev,idx);
+  const ms=Date.now()-ST.t0;
+  const sim=SIMS[ST.cur];
+  const opt=sim.opts[idx];
+  Object.entries(opt.r||{}).forEach(([k,v])=>ST.riasec[k]=(ST.riasec[k]||0)+v);
+  const pts=opt.ok?calcPts(ms):0;
+  if(opt.ok){streak++;maxStreak=Math.max(maxStreak,streak);totalPts+=pts;sndOk();haptic([15,10,20]);if(streak>=3){sndStr();showStreakBanner(streak);}}
+  else{streak=0;sndBad();haptic([80]);}
+  ST.ans.push({i:idx,ok:opt.ok,ms,r:opt.r||{}});
+  if(pts>0)floatPts(pts);
+  document.getElementById('pts-live').textContent=totalPts;
+  sim.opts.forEach((_,j)=>{
+    const c=document.getElementById('o'+j),ic=document.getElementById('oi'+j);
+    if(j===idx){c.classList.add(opt.ok?'ok':'bad');ic.textContent=opt.ok?'✅':'❌';}
+    else if(sim.opts[j].ok){c.classList.add('ok');document.getElementById('oi'+j).textContent='✅';}
+    else c.classList.add('dim');
+  });
+  setTimeout(()=>openExplPanel(opt.ok,opt,ms),400);
+}
+
+function openExplPanel(ok,opt,ms){
+  const panel=document.getElementById('expl-panel');
+  const ic=document.getElementById('expl-ic');
+  const title=document.getElementById('expl-title');
+  const body=document.getElementById('expl-body');
+  const riasec=document.getElementById('expl-riasec');
+  if(!panel)return;
+
+  if(ok===null){
+    ic.textContent='⏱';title.textContent='Время вышло!';
+    body.textContent='Переходим к следующей симуляции.';riasec.innerHTML='';
+  } else if(ok){
+    ic.textContent='✅';title.textContent=ms<10000?'Молниеносно! ⚡':ms<20000?'Отличный анализ!':'Правильно!';
+    body.textContent=opt.expl||'Верное решение!';
+    riasec.innerHTML=Object.entries(opt.r||{}).filter(([,v])=>v>0)
+      .map(([k])=>`<div class="expl-rdim" style="background:${RC[k]}">${RIC[k]} ${RLBL[k]}</div>`).join('');
+  } else {
+    ic.textContent='❌';title.textContent='Не совсем...';
+    const correctOpt=SIMS[ST.cur].opts.find(o=>o.ok);
+    body.textContent=correctOpt?.expl||'Правильный ответ выделен выше.';
+    riasec.innerHTML='';
+  }
+  panel.classList.add('show');
+}
+
+function calcPts(ms){return 100+Math.round(50*Math.max(0,1-ms/60000))+(streak>=3?25:0);}
+function floatPts(n){
+  const hdr=document.querySelector('.s-hdr');if(!hdr)return;
+  const d=document.createElement('div');d.className='pts-delta';d.textContent='+'+n;
+  hdr.style.position='relative';hdr.appendChild(d);setTimeout(()=>d.remove(),1000);
+}
+function addRipple(ev,idx){
+  const el=document.getElementById('o'+idx);if(!el)return;
+  const r=document.createElement('div');r.className='ripple';
+  const rect=el.getBoundingClientRect();const size=Math.max(rect.width,rect.height)*2;
+  r.style.cssText=`width:${size}px;height:${size}px;left:${ev.clientX-rect.left-size/2}px;top:${ev.clientY-rect.top-size/2}px`;
+  el.appendChild(r);setTimeout(()=>r.remove(),600);
+}
+function showStreakBanner(n){
+  const hdr=document.querySelector('.s-hdr');if(!hdr)return;
+  document.querySelectorAll('.streak-banner').forEach(b=>b.remove());
+  const b=document.createElement('div');b.className='streak-banner';
+  b.innerHTML=`<span>🔥 ${n} подряд!</span><span style="color:rgba(255,255,255,.8);font-size:11px;font-weight:600">+25 очков</span>`;
+  hdr.appendChild(b);setTimeout(()=>b.remove(),2500);
+}
+
+function nextSim(){
+  haptic([5]);ST.cur++;
+  if(ST.cur>=SIMS.length){buildResults();go('sr');setTimeout(()=>{sndDone();launchConfetti();},350);}
+  else showIntro(ST.cur,()=>{
+    const scr=document.getElementById('ss');
+    scr.style.opacity='.4';scr.style.transform='translateX(-15px)';
+    setTimeout(()=>{scr.style.opacity='';scr.style.transform='';renderSim();},180);
+  });
+}
+
+/* ════════════════════════════════════
+   RESULTS
+════════════════════════════════════ */
+function getProf(){
+  const rs=ST.riasec,sorted=Object.entries(rs).sort((a,b)=>b[1]-a[1]);
+  const top2=sorted.slice(0,2).map(x=>x[0]).join('');
+  return PROF.find(p=>p.code===top2)||PROF.find(p=>p.code[0]===sorted[0][0])||PROF[0];
+}
+function maxR(k){return Math.max(1,SIMS.reduce((s,sim)=>s+Math.max(...sim.opts.map(o=>o.r[k]||0)),0));}
+function pct(k){return Math.min(100,Math.round(ST.riasec[k]/maxR(k)*100));}
+function percentile(oks,avg){return Math.min(99,Math.round(((oks/SIMS.length)*.65+(Math.max(0,55-avg)/55)*.35)*100));}
+function checkAch(){
+  const oks=ST.ans.filter(a=>a.ok).length,avg=ST.ans.reduce((a,b)=>a+b.ms,0)/1000/ST.ans.length;
+  const ids=['first'];
+  if(oks===SIMS.length)ids.push('perfect');
+  if(avg<15)ids.push('speed');
+  if(maxStreak>=3)ids.push('streak3');
+  if(maxStreak>=5)ids.push('streak5');
+  return ACH.filter(a=>ids.includes(a.id));
+}
+
+function buildResults(){
+  const p=getProf();
+  const oks=ST.ans.filter(a=>a.ok).length;
+  const avg=Math.round(ST.ans.reduce((a,b)=>a+b.ms,0)/1000/ST.ans.length);
+  const pctle=percentile(oks,avg);
+  const style=avg<20?'Интуитивный':'Аналитический';
+  const fastest=ST.ans.reduce((bi,a,i)=>a.ms<ST.ans[bi].ms?i:bi,0);
+  const earned=checkAch();
+  const dims=['R','I','A','S','E','C'];
+
+  const achHtml=earned.length?`
+<div class="stit rsec">Достижения разблокированы</div>
+<div class="ach-row rsec">${earned.map((a,i)=>`<div class="ach earned" style="animation:badge-pop .5s ${i*.1}s both"><div class="ach-ic">${a.ic}</div><div class="ach-t">${a.t}</div><div class="ach-d">${a.d}</div></div>`).join('')}</div>`:'';
+
+  const pctileSvg=(()=>{const r=28,c=32,ci=2*Math.PI*r;return `<div class="pctile-ring"><svg width="64" height="64" viewBox="0 0 64 64"><circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="#ede8fc" stroke-width="5"/><circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="var(--p)" stroke-width="5" stroke-dasharray="${ci.toFixed(1)}" stroke-dashoffset="${ci.toFixed(1)}" stroke-linecap="round" transform="rotate(-90 ${c} ${c})" id="pring" style="transition:stroke-dashoffset 1.5s cubic-bezier(.4,0,.2,1)"/></svg><div class="pctile-num" id="cnt-pct2">0%</div></div>`;})();
+
+  const rbars=dims.map(d=>`<div class="rbi"><div class="rbi-ic">${RIC[d]}</div><div class="rbi-info"><div class="rbi-n">${RLBL[d]}</div><div class="rbi-d">${RDSC[d]}</div><div class="rbi-bg"><div class="rbi-bar" data-p="${pct(d)}" style="background:${RC[d]}"></div></div></div><div class="rbi-pct" style="color:${RC[d]}">${pct(d)}%</div></div>`).join('');
+  const cars=p.cars.map(c=>`<div class="car"><div class="car-ic" style="background:${c.bg}">${c.ic}</div><div style="flex:1"><div class="car-t">${c.t}</div><div class="car-d">${c.d}</div></div><div class="car-m"><div class="cmn">${c.m}%</div><div class="cml">совпадение</div></div></div>`).join('');
+  const tags=p.mtuci.map(x=>`<div class="tag">${x}</div>`).join('');
+  const insights=genInsights(oks,avg,fastest,style);
+  const insHtml=insights.map(i=>`<div class="ins"><div class="ins-ic">${i.ic}</div><div><div class="ins-t">${i.t}</div><div class="ins-d">${i.d}</div></div></div>`).join('');
+
+  document.getElementById('sr').innerHTML=`
+<div class="r-hdr">
+  <div class="r-hdr-logo">
+    <div class="r-badge">${p.ic}</div>
+    <div style="margin-top:10px;filter:brightness(0) invert(1);opacity:.8">${MTUCI_LOGO.replace('width="150"','width="110"').replace('height="64"','height="47"')}</div>
+  </div>
+  <div>
+    <div class="r-code">RIASEC · ${p.code}</div>
+    <div class="r-name">${p.name}</div>
+    <div class="r-desc">${p.desc}</div>
+    <div class="r-pts-row">
+      <span style="font-size:20px">⭐</span>
+      <div><div class="r-pts-n" id="cnt-pts">0</div><div class="r-pts-l">итого очков</div></div>
+      <div style="width:1px;background:rgba(255,255,255,.15);height:30px;margin:0 10px"></div>
+      <div><div class="r-pts-n" style="color:#fff" id="cnt-ok">0</div><div class="r-pts-l">из ${SIMS.length} верных</div></div>
+    </div>
+    <div class="r-stats">
+      <div class="rst"><div class="rsn" id="cnt-pct">0%</div><div class="rsl">точность</div></div>
+      <div class="rst"><div class="rsn">${avg}с</div><div class="rsl">среднее</div></div>
+      <div class="rst"><div class="rsn">${style}</div><div class="rsl">стиль</div></div>
+    </div>
+  </div>
+</div>
+<div class="r-body">
+  <div class="r-col-l">
+    ${achHtml}
+    <div class="stit rsec">Твой перцентиль</div>
+    <div class="pctile-card rsec">${pctileSvg}<div class="pctile-info"><div class="pctile-title">Топ ${100-pctle}% участников</div><div class="pctile-sub">Ты точнее и быстрее ${pctle}% всех, кто проходил этот квест</div></div></div>
+    <div class="stit rsec">Профиль RIASEC</div>
+    <div class="radar-wrap rsec"><canvas id="rdr" width="280" height="280"></canvas><div class="radar-legend">${dims.map(d=>`<div class="rl"><div class="rl-dot" style="background:${RC[d]}"></div><div class="rl-tx">${RLBL[d]}</div></div>`).join('')}</div></div>
+    <div class="stit rsec">ДНК профессии</div>
+    <div class="dna-wrap rsec"><canvas id="dna" width="280" height="90"></canvas><p>Уникальный RIASEC-код ${ST.name} · ${p.code}</p></div>
+    <div class="stit rsec">Статистика</div>
+    <div class="perf-grid rsec">
+      <div class="pc"><div class="pc-ic">🎯</div><div class="pc-n" id="cnt-acc">0%</div><div class="pc-l">Точность ответов</div></div>
+      <div class="pc"><div class="pc-ic">⚡</div><div class="pc-n">${avg}с</div><div class="pc-l">Среднее на задачу</div></div>
+      <div class="pc"><div class="pc-ic">🔥</div><div class="pc-n">${maxStreak}</div><div class="pc-l">Лучший стрик</div></div>
+      <div class="pc"><div class="pc-ic">🏅</div><div class="pc-n">${earned.length}</div><div class="pc-l">Достижений получено</div></div>
+    </div>
+  </div>
+  <div class="r-col-r">
+    <div class="stit rsec">RIASEC по компетенциям</div>
+    <div class="rb-card rsec">${rbars}</div>
+    <div class="stit rsec">Время по симуляциям</div>
+    <div class="tc rsec"><h4>Секунды на задачу (🟢 верно · 🔴 нет)</h4>${buildTimeChart()}</div>
+    <div class="stit rsec">Подходящие профессии</div>
+    <div class="cars rsec">${cars}</div>
+    <div class="stit rsec">Инсайты о тебе</div>
+    <div class="ins-list rsec">${insHtml}</div>
+    <div class="mtuci-box rsec" style="margin-top:20px">
+      <h3>🎓 Направления в СКФ МТУСИ</h3>
+      <p>На основе кода ${p.code} подобраны специальности, где ты раскроешь потенциал.</p>
+      <div class="tags">${tags}</div>
+    </div>
+    <div class="acts rsec">
+      <button class="btn-print" onclick="printReport()">🖨️ Напечатать отчёт</button>
+      <button class="btn-shr" onclick="shareRes()">📤 Поделиться</button>
+      <button class="btn-sav" onclick="saveCard()">💾 Скачать карточку</button>
+      <button class="btn-rst" onclick="restart()">🔄 Пройти снова</button>
+    </div>
+  </div>
+</div>`;
+
+  setTimeout(()=>{
+    document.querySelectorAll('.rsec').forEach((el,i)=>setTimeout(()=>el.classList.add('vis'),i*110));
+    animCount(document.getElementById('cnt-pts'),totalPts,1200);
+    animCount(document.getElementById('cnt-ok'),oks,800);
+    animCountPct(document.getElementById('cnt-pct'),Math.round(oks/SIMS.length*100),1000,'%');
+    animCountPct(document.getElementById('cnt-acc'),Math.round(oks/SIMS.length*100),1000,'%');
+    setTimeout(()=>{
+      const ring=document.getElementById('pring');
+      const ci=2*Math.PI*28;
+      if(ring)ring.style.strokeDashoffset=(ci*(1-pctle/100)).toFixed(1);
+      animCountPct(document.getElementById('cnt-pct2'),pctle,1500,'%');
+    },500);
+    setTimeout(()=>document.querySelectorAll('.rbi-bar').forEach(b=>{b.style.width=b.dataset.p+'%';}),600);
+    setTimeout(()=>animateRadar(),700);
+    setTimeout(()=>drawDNA(),900);
+  },200);
+}
+
+/* ── ANIMATED COUNTERS ── */
+function animCount(el,target,dur=1000){
+  if(!el)return;
+  const s=Date.now();
+  const r=()=>{const p=Math.min(1,(Date.now()-s)/dur),e=1-Math.pow(1-p,3);el.textContent=Math.round(target*e);if(p<1)requestAnimationFrame(r);};
+  requestAnimationFrame(r);
+}
+function animCountPct(el,target,dur,sfx=''){
+  if(!el)return;
+  const s=Date.now();
+  const r=()=>{const p=Math.min(1,(Date.now()-s)/dur),e=1-Math.pow(1-p,3);el.textContent=Math.round(target*e)+sfx;if(p<1)requestAnimationFrame(r);};
+  requestAnimationFrame(r);
+}
+
+/* ── RADAR ── */
+function animateRadar(){let pg=0;const r=()=>{pg=Math.min(1,pg+.035);drawRadar(pg);if(pg<1)requestAnimationFrame(r);};requestAnimationFrame(r);}
+function drawRadar(scale=1){
+  const cv=document.getElementById('rdr');if(!cv)return;
+  const ctx=cv.getContext('2d'),cx=140,cy=140,r=100;
+  const dims=['R','I','A','S','E','C'];
+  const scores=dims.map(d=>pct(d)/100);
+  ctx.clearRect(0,0,280,280);
+  [.2,.4,.6,.8,1].forEach(lv=>{ctx.beginPath();dims.forEach((_,i)=>{const a=(i*60-90)*Math.PI/180,lr=r*lv,x=cx+lr*Math.cos(a),y=cy+lr*Math.sin(a);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);});ctx.closePath();ctx.strokeStyle=lv===1?'rgba(55,37,121,.15)':'rgba(55,37,121,.07)';ctx.lineWidth=1;ctx.stroke();});
+  dims.forEach((_,i)=>{const a=(i*60-90)*Math.PI/180;ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+r*Math.cos(a),cy+r*Math.sin(a));ctx.strokeStyle='rgba(55,37,121,.12)';ctx.lineWidth=1;ctx.stroke();});
+  ctx.beginPath();dims.forEach((d,i)=>{const a=(i*60-90)*Math.PI/180,sc=scores[i]*scale,lr=r*Math.max(sc,.06),x=cx+lr*Math.cos(a),y=cy+lr*Math.sin(a);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);});ctx.closePath();ctx.fillStyle='rgba(55,37,121,.16)';ctx.fill();ctx.strokeStyle='#372579';ctx.lineWidth=2.5;ctx.stroke();
+  dims.forEach((d,i)=>{const a=(i*60-90)*Math.PI/180,sc=scores[i]*scale,lr=r*Math.max(sc,.06),x=cx+lr*Math.cos(a),y=cy+lr*Math.sin(a);ctx.beginPath();ctx.arc(x,y,5,0,Math.PI*2);ctx.fillStyle=RC[d];ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();});
+  ctx.font='bold 11px Montserrat,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+  dims.forEach((d,i)=>{const a=(i*60-90)*Math.PI/180,lx=cx+(r+28)*Math.cos(a),ly=cy+(r+28)*Math.sin(a);ctx.fillStyle=RC[d];ctx.fillText(RIC[d]+' '+d,lx,ly);});
+}
+
+/* ── DNA hexagons ── */
+function drawDNA(){
+  const cv=document.getElementById('dna');if(!cv)return;
+  const ctx=cv.getContext('2d');
+  ctx.clearRect(0,0,280,90);
+  const dims=['R','I','A','S','E','C'];
+  const spacing=280/6;
+  dims.forEach((d,i)=>{
+    const sc=pct(d)/100;
+    const cx=spacing*i+spacing/2,cy=45;
+    const r=Math.max(12,36*sc);
+    // hexagon
+    ctx.beginPath();
+    for(let j=0;j<6;j++){const a=(j*60-30)*Math.PI/180;const x=cx+r*Math.cos(a),y=cy+r*Math.sin(a);j===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}
+    ctx.closePath();
+    const grad=ctx.createRadialGradient(cx,cy,0,cx,cy,r);
+    grad.addColorStop(0,RC[d]);grad.addColorStop(1,RC[d]+'88');
+    ctx.fillStyle=grad;ctx.globalAlpha=.15+sc*.7;ctx.fill();
+    ctx.globalAlpha=1;ctx.strokeStyle=RC[d];ctx.lineWidth=2;ctx.stroke();
+    // label
+    ctx.font=`bold ${10+sc*4}px Montserrat,sans-serif`;
+    ctx.fillStyle=RC[d];ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(d,cx,cy);
+    // score below
+    ctx.font='bold 9px Montserrat,sans-serif';ctx.fillStyle='#7b7b9d';
+    ctx.fillText(pct(d)+'%',cx,cy+(r>20?r+8:28));
+  });
+}
+
+/* ── TIME CHART ── */
+function buildTimeChart(){
+  const n=SIMS.length,bw=22,gap=9,bh=56,total=n*(bw+gap)-gap;
+  let bars='';
+  ST.ans.forEach((a,i)=>{
+    const t=Math.min(a.ms/1000,60),h=Math.round(bh*t/60),col=a.ok?'#27ae60':'#e74c3c',x=i*(bw+gap);
+    bars+=`<rect x="${x}" y="${bh-h}" width="${bw}" height="${h}" rx="4" fill="${col}" opacity=".8"/>
+<text x="${x+bw/2}" y="${bh+13}" text-anchor="middle" font-size="12" fill="#7b7b9d">${SIMS[i].icon}</text>
+<text x="${x+bw/2}" y="${bh-h-5}" text-anchor="middle" font-size="9" font-family="Montserrat" font-weight="700" fill="${col}">${Math.round(t)}с</text>`;
+  });
+  return `<svg width="100%" viewBox="0 -10 ${total} ${bh+32}" xmlns="http://www.w3.org/2000/svg">${bars}</svg>`;
+}
+
+/* ── INSIGHTS ── */
+function genInsights(oks,avg,fastest,style){
+  const out=[];const sorted=Object.entries(ST.riasec).sort((a,b)=>b[1]-a[1]);const topDim=sorted[0][0];
+  if(oks===SIMS.length)out.push({ic:'🏆',t:'Идеальный результат!',d:`Все ${SIMS.length} симуляций верно. Высокая точность — твоё конкурентное преимущество.`});
+  else if(oks>=6)out.push({ic:'✅',t:`Высокая точность: ${oks} из ${SIMS.length}`,d:'Ты решаешь большинство задач верно. Хорошая аналитическая база.'});
+  else out.push({ic:'📚',t:'Есть куда расти',d:'Некоторые задачи оказались сложными — именно здесь начинается развитие.'});
+  if(avg<15)out.push({ic:'⚡',t:'Молниеносное мышление',d:`Средний ответ ${avg}с — работаешь на интуиции.`});
+  else if(avg>35)out.push({ic:'🧐',t:'Глубокий аналитик',d:`${avg}с на решение — системный вдумчивый подход.`});
+  else out.push({ic:'⚖️',t:'Баланс скорости и точности',d:`${avg}с — оптимальный темп взвешенных решений.`});
+  out.push({ic:RIC[topDim],t:`Доминирующий тип: ${RLBL[topDim]}`,d:`Большинство ответов соответствуют паттерну "${RLBL[topDim]}". ${RDSC[topDim]}.`});
+  out.push({ic:'🎯',t:`Лучшая симуляция: ${SIMS[fastest].prof}`,d:`Решил быстрее всего — за ${Math.round(ST.ans[fastest].ms/1000)}с. Вероятно, это близко к твоей природе.`});
+  if(maxStreak>=3)out.push({ic:'🔥',t:`Стрик ${maxStreak} подряд!`,d:'Уверенность в суждениях без единой ошибки — важный профессиональный навык.'});
+  return out.slice(0,4);
+}
+
+/* ── SAVE CARD ── */
+function saveCard(){
+  haptic([5]);
+  const p=getProf();
+  const oks=ST.ans.filter(a=>a.ok).length;
+  const cv=document.createElement('canvas');
+  cv.width=1080;cv.height=1080;
+  const ctx=cv.getContext('2d');
+  // background
+  const bg=ctx.createLinearGradient(0,0,1080,1080);
+  bg.addColorStop(0,'#251857');bg.addColorStop(.5,'#372579');bg.addColorStop(1,'#4e35a8');
+  ctx.fillStyle=bg;ctx.fillRect(0,0,1080,1080);
+  // grid dots
+  ctx.fillStyle='rgba(255,255,255,.04)';
+  for(let x=0;x<1080;x+=40)for(let y=0;y<1080;y+=40){ctx.beginPath();ctx.arc(x,y,2,0,Math.PI*2);ctx.fill();}
+  // uni badge
+  ctx.fillStyle='rgba(255,255,255,.1)';roundRect(ctx,40,40,200,56,28);ctx.fill();
+  ctx.font='bold 22px Arial';ctx.fillStyle='rgba(255,255,255,.8)';ctx.textAlign='center';ctx.fillText('🎓 СКФ МТУСИ',140,76);
+  // icon
+  ctx.font='160px Arial';ctx.textAlign='center';ctx.fillText(p.ic,540,320);
+  // profile name
+  ctx.font='bold 64px Arial';ctx.fillStyle='#fff';ctx.fillText(p.name,540,420);
+  // RIASEC code
+  ctx.font='bold 36px Arial';ctx.fillStyle='rgba(255,255,255,.6)';ctx.fillText('RIASEC: '+p.code,540,490);
+  // divider
+  ctx.strokeStyle='rgba(255,255,255,.15)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(120,530);ctx.lineTo(960,530);ctx.stroke();
+  // stats
+  const stats=[['⭐',totalPts+'','очков'],['🎯',Math.round(oks/SIMS.length*100)+'%','точность'],['🔥',maxStreak+'','стрик']];
+  stats.forEach((s,i)=>{const x=200+i*280;ctx.font='32px Arial';ctx.fillStyle='rgba(255,255,255,.7)';ctx.textAlign='center';ctx.fillText(s[0],x,600);ctx.font='bold 52px Arial';ctx.fillStyle='#fff';ctx.fillText(s[1],x,665);ctx.font='24px Arial';ctx.fillStyle='rgba(255,255,255,.5)';ctx.fillText(s[2],x,705);});
+  // mini RIASEC bars
+  const dims=['R','I','A','S','E','C'];const bx=120,by=760,bw=140,bh=20,gap=8;
+  dims.forEach((d,i)=>{
+    const col=i<3?[bx,by+(i*(bh+gap))]:[bx+bw+30,by+((i-3)*(bh+gap))];
+    const sc=pct(d)/100;
+    ctx.fillStyle='rgba(255,255,255,.1)';roundRect(ctx,col[0],col[1],bw,bh,bh/2);ctx.fill();
+    ctx.fillStyle=RC[d];roundRect(ctx,col[0],col[1],Math.max(bw*sc,bh),bh,bh/2);ctx.fill();
+    ctx.font='bold 16px Arial';ctx.fillStyle='#fff';ctx.textAlign='left';ctx.fillText(RIC[d]+' '+d,col[0]+8,col[1]+bh/2+6);
+    ctx.textAlign='right';ctx.fillText(pct(d)+'%',col[0]+bw-8,col[1]+bh/2+6);
+  });
+  // footer
+  ctx.font='bold 28px Arial';ctx.fillStyle='rgba(255,255,255,.5)';ctx.textAlign='center';ctx.fillText('profkvest.skf-mtuci.ru',540,1040);
+
+  try{
+    cv.toBlob(blob=>{
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');a.href=url;a.download='profkvest-'+p.code+'.png';a.click();
+      setTimeout(()=>URL.revokeObjectURL(url),1000);
+    },'image/png');
+  }catch(e){alert('Скачивание недоступно в этом браузере. Используй кнопку "Поделиться".');}
+}
+function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();}
+
+/* ── CONFETTI ── */
+function launchConfetti(){
+  const cv=document.getElementById('confetti'),ctx=cv.getContext('2d');
+  cv.width=window.innerWidth;cv.height=window.innerHeight;
+  const cols=['#372579','#7c5fd4','#27ae60','#e74c3c','#f39c12','#fff','#ffd700'];
+  const parts=Array.from({length:100},()=>({x:Math.random()*cv.width,y:-20,vx:(Math.random()-.5)*6,vy:Math.random()*5+2,r:Math.random()*7+3,col:cols[Math.floor(Math.random()*cols.length)],rot:Math.random()*360,vr:(Math.random()-.5)*10}));
+  let fr=0;
+  const loop=()=>{if(fr++>130){ctx.clearRect(0,0,cv.width,cv.height);return;}ctx.clearRect(0,0,cv.width,cv.height);const al=Math.max(0,1-fr/130);parts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.15;p.rot+=p.vr;ctx.save();ctx.globalAlpha=al;ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);ctx.fillStyle=p.col;ctx.fillRect(-p.r,-p.r*.5,p.r*2,p.r);ctx.restore();});requestAnimationFrame(loop);};
+  requestAnimationFrame(loop);
+}
+
+/* ── SHARE ── */
+function shareRes(){
+  haptic([10,10,10]);
+  const p=getProf();const oks=ST.ans.filter(a=>a.ok).length;
+  const txt=`Прошёл ПрофКвест СКФ МТУСИ!\n${p.ic} ${p.name} (RIASEC: ${p.code})\n⭐ ${totalPts} очков · 🎯 ${Math.round(oks/SIMS.length*100)}%\nТоп ${100-percentile(oks,Math.round(ST.ans.reduce((a,b)=>a+b.ms,0)/1000/ST.ans.length))}% участников`;
+  if(navigator.share)navigator.share({title:'ПрофКвест — мой результат',text:txt});
+  else if(navigator.clipboard)navigator.clipboard.writeText(txt).then(()=>alert('Скопировано! 🎉'));
+  else alert(txt);
+}
+
+/* ── RESTART ── */
+function restart(){
+  haptic([5]);clearInterval(tmrI);
+  Object.assign(ST,{name:'',grade:'',cur:0,ans:[],riasec:{R:0,I:0,A:0,S:0,E:0,C:0}});
+  streak=0;maxStreak=0;totalPts=0;answered=false;grade='';hist=['sh'];
+  document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on','out'));
+  document.getElementById('sh').classList.add('on');
+  document.getElementById('inp').value='';
+  document.querySelectorAll('.gc').forEach(c=>c.classList.remove('on'));
+  document.getElementById('bst').disabled=true;
+  startParticles();
+}
+
+function showInfo(){
+  haptic([5]);
+  alert('🧬 Методика Холланда (RIASEC)\n\nДжон Холланд выделил 6 типов личности:\n\n🔧 R — Реалист: техника, практика\n🔬 I — Исследователь: анализ, наука\n🎨 A — Творец: дизайн, искусство\n🤝 S — Социальный: люди, помощь\n🚀 E — Лидер: управление, бизнес\n📋 C — Организатор: порядок, данные\n\nКаждая симуляция измеряет баллы по этим осям. Итог — персональный RIASEC-код.');
+}
+
+/* ════════════════════════════════════
+   PRINT REPORT
+════════════════════════════════════ */
+const MTUCI_LOGO=`<svg width="150" height="64" viewBox="0 0 197 84" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M29.6966 73.5482C26.6474 73.5482 23.5982 73.5482 20.5491 73.5482C19.4677 73.5482 18.4041 73.3497 17.3936 72.9167C16.064 72.3574 14.9649 71.4915 14.0785 70.3549C11.0825 66.512 8.06879 62.6873 5.05506 58.8444C4.25734 57.8341 3.45962 56.8057 2.6619 55.7953C1.35007 54.0995 0.729493 52.1871 0.871438 50.0402C0.924523 49.2284 1.11955 48.4164 1.29684 47.6225C2.59093 41.9395 3.86743 36.2744 5.12603 30.6275C5.72872 27.9394 7.23558 25.9908 9.66437 24.8001C15.1598 22.112 20.6377 19.4057 26.1333 16.7175C28.5088 15.5629 30.902 15.5629 33.2776 16.7175C38.7732 19.4057 44.2865 22.094 49.782 24.8001C52.1753 25.9728 53.6821 27.9213 54.2671 30.5554C55.6321 36.5993 56.9795 42.6432 58.3268 48.687C58.894 51.2669 58.3976 53.6304 56.7844 55.7052C52.9552 60.6305 49.1083 65.5377 45.2438 70.427C43.6128 72.4838 41.4501 73.5122 38.8617 73.5302C35.8127 73.5663 32.7634 73.5482 29.6966 73.5482ZM29.6966 68.2982C31.9302 68.2982 34.1817 68.2982 36.4153 68.2982C36.894 68.2982 37.3726 68.2621 37.8512 68.1718C39.9077 67.793 41.5741 66.7646 42.8682 65.1048C43.9674 63.6975 45.0665 62.3083 46.1478 60.9012C47.8142 58.7723 49.4983 56.6434 51.1648 54.4965C52.7779 52.4217 53.3453 50.0763 52.7779 47.4963C51.8207 43.0581 50.8102 38.6199 49.7997 34.1816C49.197 31.5477 47.7079 29.6172 45.3146 28.4265C41.3436 26.4599 37.3549 24.5115 33.3663 22.5629C30.9197 21.3723 28.4734 21.3723 26.027 22.5629C22.0737 24.5115 18.1027 26.4599 14.1317 28.4085C11.7207 29.5991 10.2138 31.5295 9.61114 34.1816C8.70696 38.187 7.80293 42.1921 6.9165 46.1973C6.73921 46.9911 6.54418 47.7669 6.47335 48.5788C6.27832 50.834 6.93424 52.8366 8.33479 54.6047C11.047 58.0506 13.7594 61.4965 16.4541 64.9604C18.1913 67.1976 20.4427 68.2982 23.2438 68.2982C25.3888 68.2982 27.5338 68.2982 29.6966 68.2982Z" fill="black"/><mask id="pqLogoMask" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="68" y="24" width="120" height="26"><path d="M187.226 24.9316H68.6504V49.7576H187.226V24.9316Z" fill="white"/></mask><g mask="url(#pqLogoMask)"><path d="M187.226 47.3338C187.212 47.4059 187.198 47.4636 187.183 47.5358C186.967 48.6465 186.029 49.411 184.861 49.4255C183.75 49.4543 182.769 48.7186 182.524 47.6512C182.466 47.4059 182.452 47.1463 182.452 46.901C182.452 42.4436 182.452 37.9862 182.452 33.5288C182.437 33.3124 182.423 33.298 182.408 33.298C182.365 33.3413 182.322 33.399 182.279 33.4423C178.196 38.4767 174.114 43.5111 170.017 48.5455C169.382 49.3245 168.531 49.5842 167.565 49.3678C166.642 49.1514 166.007 48.5744 165.762 47.6223C165.704 47.4204 165.704 47.2184 165.704 47.002C165.704 40.5539 165.718 34.0914 165.689 27.6433C165.689 25.97 167.377 24.8015 169.007 25.3785C169.858 25.6814 170.464 26.547 170.479 27.4702C170.493 28.0616 170.479 28.6386 170.479 29.2301C170.479 33.2114 170.479 37.2073 170.479 41.1886C170.479 41.4483 170.551 41.3617 170.594 41.3185C170.637 41.2752 174.749 36.2263 178.86 31.1775C182.957 26.1431 183.981 24.8881 185.842 24.9313C186.794 26.2152 187.01 26.5037 187.14 26.8355C187.198 27.1961 187.226 27.2827 187.241 27.3259C187.226 33.9904 187.226 40.6549 187.226 47.3338Z" fill="black"/><path d="M153.37 24.9316C153.616 24.9605 153.846 24.9749 154.092 25.0038C156.428 25.1624 158.462 26.0568 160.266 27.4993C160.482 27.6724 160.713 27.8744 160.871 28.1052C161.405 28.8409 161.477 29.6487 161.059 30.4421C160.626 31.2643 159.89 31.6394 158.967 31.6394C158.376 31.6394 157.857 31.4086 157.409 31.0335C156.688 30.4421 155.909 29.9228 155.015 29.6631C154.048 29.3746 153.053 29.3025 152.072 29.4179C148.567 29.8507 145.941 32.3318 145.35 35.8227C144.903 38.4193 145.48 40.785 147.254 42.7901C148.451 44.1317 149.951 44.9684 151.755 45.1992C153.442 45.4155 155.029 45.0838 156.486 44.2327C156.876 44.0019 157.251 43.7566 157.626 43.5114C158.333 43.0209 159.097 42.8911 159.905 43.2229C160.727 43.5691 161.16 44.2182 161.218 45.1126C161.275 45.9926 160.929 46.685 160.222 47.2043C158.563 48.4449 156.717 49.2815 154.654 49.57C150.601 50.1326 147.038 49.0796 144.109 46.1801C142.378 44.4635 141.296 42.3718 140.82 39.9916C140.561 38.6934 140.474 37.3807 140.618 36.068C141.138 31.423 143.503 28.0619 147.716 26.0135C149.057 25.3644 150.485 25.047 151.971 24.9749C152.173 24.9461 152.577 24.9316 153.37 24.9316Z" fill="black"/><path d="M88.5 36.5441C88.2548 37.0201 88.024 37.5106 87.7788 37.9866C86.2353 41.0881 84.6773 44.1895 83.1338 47.2909C82.7155 48.1132 81.7779 48.6325 80.8546 48.5604C79.8881 48.4882 79.239 47.9978 78.8062 47.1467C77.0896 43.7568 75.373 40.3668 73.642 36.9913C73.5987 36.9047 73.5554 36.8326 73.5122 36.7461C73.4977 36.7461 73.4689 36.7461 73.4689 36.948C73.4689 40.2803 73.4689 43.6125 73.4689 46.9447C73.4689 47.5939 73.3102 48.1709 72.863 48.6469C72.1995 49.3682 71.3628 49.5846 70.4396 49.3393C69.5308 49.0941 68.9538 48.4882 68.7374 47.565C68.6941 47.3775 68.6797 47.19 68.6797 47.0024C68.6797 40.5543 68.6797 34.1062 68.6797 27.6581C68.6797 26.4897 69.3865 25.5665 70.4684 25.2924C71.5936 25.0183 72.6899 25.5232 73.2237 26.5762C75.5028 31.0481 77.7821 35.5343 80.0468 40.0062C80.3642 40.6265 80.6815 41.2468 80.9989 41.867C81.0999 42.0401 81.1431 41.968 81.2008 41.8382C83.7253 36.7605 86.2353 31.6684 88.7597 26.5907C89.1924 25.7107 89.9137 25.2203 90.9091 25.2203C91.8467 25.2203 92.568 25.6386 93.044 26.4608C93.246 26.807 93.3181 27.1965 93.3181 27.6004C93.3181 33.1686 93.3181 38.7368 93.3181 44.2905C93.3181 46.1514 93.3181 47.0746 93.3181 47.0746C93.3181 48.1997 92.4381 49.2095 91.313 49.3826C90.1301 49.5701 88.9905 48.8922 88.6587 47.7814C88.5722 47.5073 88.5433 47.2188 88.5433 46.9303C88.5289 43.5404 88.5433 40.136 88.5433 36.7461C88.5433 36.6739 88.5289 36.5441 88.5 36.5441Z" fill="black"/><path d="M129.932 38.1754C130.278 37.483 130.596 36.8339 130.927 36.1703C132.485 33.0112 134.058 29.8376 135.63 26.6785C135.745 26.4332 135.89 26.2024 136.063 26.0005C136.625 25.3225 137.361 25.1061 138.198 25.3081C138.457 25.3802 138.731 25.4812 138.962 25.611C139.9 26.1159 140.246 27.0247 139.914 28.0344C139.857 28.2075 139.784 28.3806 139.698 28.5393C137.044 33.9055 134.375 39.2717 131.721 44.6379C131.086 45.9218 130.293 47.1047 129.211 48.0856C128.36 48.8501 127.393 49.3983 126.268 49.5858C124.724 49.8599 123.296 49.5281 122.027 48.6193C121.277 48.0856 120.945 47.321 121.161 46.4122C121.363 45.5467 121.883 44.9264 122.777 44.6956C123.441 44.5225 124.09 44.6091 124.681 44.9409C125.172 45.2149 125.604 45.1428 126.037 44.8399C126.585 44.4504 126.989 43.9311 127.321 43.3541C127.653 42.6617 127.436 42.2145 127.307 42.0125C124.58 37.6128 121.854 33.2131 119.113 28.8134C118.911 28.4816 118.738 28.1354 118.68 27.7459C118.594 27.1978 118.724 26.7073 119.07 26.2745C119.531 25.6975 120.137 25.3513 120.873 25.2359C121.637 25.1205 122.287 25.409 122.763 26.0149C123.037 26.3755 123.267 26.7794 123.498 27.1689C125.604 30.7608 127.71 34.3671 129.802 37.959C129.845 38.0456 129.932 38.1754 129.932 38.1754Z" fill="black"/><path d="M108.796 29.7206C108.796 29.836 108.796 29.9947 108.796 29.9947C108.796 35.6639 108.796 41.3186 108.796 46.9877C108.796 47.81 108.493 48.4879 107.83 48.9784C106.459 49.9737 104.324 49.3102 104.036 47.4205C104.007 47.2474 104.022 47.0598 104.022 46.8867C104.022 41.2609 104.022 35.635 104.022 29.9947C104.022 29.6918 103.762 29.7351 103.762 29.7351C102.045 29.7351 100.329 29.7351 98.6265 29.7351C98.1793 29.7351 97.7465 29.6485 97.3426 29.4177C96.5781 28.9705 96.2751 28.2637 96.2896 27.4126C96.3184 26.3018 97.0252 25.494 98.1216 25.2777C98.2947 25.2488 98.4678 25.2344 98.6409 25.2344C103.82 25.2344 108.984 25.2344 114.162 25.2344C115.417 25.2344 116.211 26.0855 116.413 26.8356C116.831 28.3358 115.793 29.7206 114.206 29.7351C112.489 29.7351 110.773 29.7351 109.056 29.7351C108.897 29.7206 108.796 29.7206 108.796 29.7206Z" fill="black"/></g></svg>`;
+
+// Белая версия для тёмного фона (CSS filter применяется через класс)
+const MTUCI_LOGO_W=MTUCI_LOGO.replace(/fill="black"/g,'fill="white"');
+
+const PROF_REC={
+  IR:`<p>По результатам прохождения квеста, ваш профиль соответствует типу <strong>IR (Исследователь-Реалист)</strong> по шестиугольной модели профессиональных интересов Джона Холланда. Данное сочетание характеризует людей с выраженным аналитическим мышлением, стремлением к систематическому изучению технических систем и склонностью к практическому применению полученных знаний.</p><p>В ходе тестирования вы демонстрировали высокую точность при решении логических и технических задач. Ваши ответы в симуляциях, связанных с программированием, диагностикой сетей и анализом систем, свидетельствуют о развитой технической интуиции и умении выявлять структурные закономерности в сложных системах. Скорость реакции в технических заданиях указывает на сформированные профессиональные компетенции в данной области.</p><p>Специалисты профиля IR наиболее успешно реализуют себя в разработке программного обеспечения, телекоммуникационной инженерии, кибербезопасности и исследовательской деятельности. Рекомендуется рассмотреть карьерные траектории, предполагающие глубокую техническую специализацию с элементами исследовательской работы.</p>`,
+  IC:`<p>Ваш профиль соответствует типу <strong>IC (Исследователь-Организатор)</strong> по классификации Холланда. Данное сочетание типично для специалистов, обладающих выраженными аналитическими способностями в сочетании с высокой методичностью и вниманием к деталям, что обеспечивает систематический и структурированный подход к решению задач.</p><p>В ходе тестирования были зафиксированы устойчивые признаки системного мышления: при решении задач вы последовательно анализировали доступные данные и принимали решения на основе объективных показателей. Особую компетентность вы показали в симуляциях, требующих интерпретации данных, выявления причинно-следственных связей и построения логических выводов.</p><p>Профиль IC наиболее востребован в областях анализа данных, системного анализа, управления качеством и автоматизации процессов. Специалисты с данным профилем успешно реализуют себя в ролях аналитиков данных, системных аналитиков, QA-инженеров и DevOps-специалистов.</p>`,
+  AS:`<p>По итогам тестирования ваш профиль идентифицирован как <strong>AS (Артистичный-Социальный)</strong>. Данное сочетание характеризует творчески ориентированных специалистов с развитой эмпатией и способностью создавать цифровые продукты, ориентированные на пользователя и учитывающие его потребности.</p><p>В процессе прохождения квеста вы демонстрировали склонность к нестандартным решениям и интуитивное понимание пользовательского опыта. Высокая точность в задачах на проектирование интерфейсов свидетельствует о сформированном дизайн-мышлении и способности воспринимать информационные продукты с точки зрения конечного пользователя.</p><p>Данный профиль наиболее актуален для сфер UX/UI-дизайна, разработки цифровых продуктов, медиатехнологий и создания образовательного контента. Рекомендуется рассмотреть специальности, сочетающие творческие и технологические компетенции.</p>`,
+  SE:`<p>Ваш профиль соответствует типу <strong>SE (Социальный-Предпринимательский)</strong> по модели Холланда. Данное сочетание характерно для эффективных лидеров, способных объединять людей вокруг общих целей и организовывать командную работу в условиях динамичной IT-среды.</p><p>Результаты тестирования зафиксировали высокую ориентацию на командные решения и учёт интересов коллектива. В управленческих задачах вы демонстрировали зрелый стратегический подход, сочетающий командные ценности с практической эффективностью и готовностью принимать взвешенные решения в нестандартных ситуациях.</p><p>Профиль SE наиболее востребован в сферах управления IT-проектами, продуктового менеджмента, HR-технологий и образовательных платформ. Рекомендуется рассматривать направления, предполагающие взаимодействие с командами и управление технологическими продуктами.</p>`,
+  EC:`<p>По результатам тестирования ваш профиль идентифицирован как <strong>EC (Предпринимательский-Организатор)</strong>. Данная комбинация характеризует людей с выраженными лидерскими качествами и стратегическим видением в сочетании с организационными способностями и умением структурировать процессы.</p><p>Ваши ответы в предпринимательских сценариях демонстрируют умение принимать взвешенные решения в условиях ограниченных ресурсов и оценивать стратегические риски. Высокая скорость принятия управленческих решений свидетельствует о развитой деловой интуиции и способности к стратегическому мышлению.</p><p>Профиль EC наиболее востребован в сферах IT-предпринимательства, управления цифровыми продуктами, венчурного анализа и цифрового маркетинга. Специалисты с данным профилем успешно реализуют себя в роли основателей технологических стартапов, директоров по продукту и стратегических консультантов.</p>`,
+  RC:`<p>Ваш профиль соответствует типу <strong>RC (Реалистичный-Организатор)</strong> по классификации Холланда. Данное сочетание характерно для опытных технических специалистов, ориентированных на создание надёжных практических систем и обеспечение стабильного функционирования IT-инфраструктуры.</p><p>В ходе тестирования вы продемонстрировали системный подход к диагностике технических неисправностей и чёткое понимание причинно-следственных связей в технических системах. Точность при работе с сетевыми диаграммами и техническими схемами свидетельствует о практическом инженерном мышлении и умении локализовать проблемы в сложных инфраструктурных системах.</p><p>Профиль RC наиболее актуален для сфер сетевой инженерии, системного администрирования, DevOps и технической кибербезопасности. Специалисты с данным профилем составляют фундамент IT-инфраструктуры современных организаций и обеспечивают их бесперебойное технологическое функционирование.</p>`,
+};
+
+function printReport(){
+  haptic([5]);
+  buildPrintDoc();
+  setTimeout(()=>window.print(),300);
+}
+
+function buildPrintDoc(){
+  const p=getProf();
+  const oks=ST.ans.filter(a=>a.ok).length;
+  const avg=Math.round(ST.ans.reduce((a,b)=>a+b.ms,0)/1000/ST.ans.length);
+  const acc=Math.round(oks/SIMS.length*100);
+  const style=avg<20?'Интуитивный':'Аналитический';
+  const pctle=percentile(oks,avg);
+  const dims=['R','I','A','S','E','C'];
+  const now=new Date();
+  const dateStr=now.toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'});
+
+  // RIASEC bars — two-column (left 3, right 3)
+  const mkBar=d=>`<div class="pr-bar-row">
+<div class="pr-bar-lbl">${RIC[d]} ${RLBL[d]}</div>
+<div class="pr-bar-track"><div class="pr-bar-fill" style="width:${pct(d)}%;background:${RC[d]}"></div></div>
+<div class="pr-bar-pct">${pct(d)}%</div></div>`;
+  const barsL=dims.slice(0,3).map(mkBar).join('');
+  const barsR=dims.slice(3).map(mkBar).join('');
+
+  // SVG radar (паутина) для печатного отчёта — 160×160, метки внутри
+  const svgCx=80,svgCy=80,svgR=52,svgSize=160;
+  const scores=dims.map(d=>pct(d)/100);
+  let svgGrid='';
+  [.25,.5,.75,1].forEach(lv=>{
+    const pts=dims.map((_,i)=>{const a=(i*60-90)*Math.PI/180,r=svgR*lv;return `${(svgCx+r*Math.cos(a)).toFixed(1)},${(svgCy+r*Math.sin(a)).toFixed(1)}`;}).join(' ');
+    svgGrid+=`<polygon points="${pts}" fill="none" stroke="${lv===1?'rgba(55,37,121,.3)':'rgba(55,37,121,.1)'}" stroke-width="${lv===1?1:.6}"/>`;
+  });
+  const svgAxes=dims.map((_,i)=>{const a=(i*60-90)*Math.PI/180;return `<line x1="${svgCx}" y1="${svgCy}" x2="${(svgCx+svgR*Math.cos(a)).toFixed(1)}" y2="${(svgCy+svgR*Math.sin(a)).toFixed(1)}" stroke="rgba(55,37,121,.18)" stroke-width=".7"/>`;}).join('');
+  const svgPts=dims.map((d,i)=>{const a=(i*60-90)*Math.PI/180,r=svgR*Math.max(scores[i],.06);return `${(svgCx+r*Math.cos(a)).toFixed(1)},${(svgCy+r*Math.sin(a)).toFixed(1)}`;}).join(' ');
+  const svgDots=dims.map((d,i)=>{const a=(i*60-90)*Math.PI/180,r=svgR*Math.max(scores[i],.06);return `<circle cx="${(svgCx+r*Math.cos(a)).toFixed(1)}" cy="${(svgCy+r*Math.sin(a)).toFixed(1)}" r="3" fill="${RC[d]}" stroke="white" stroke-width="1.5"/>`;}).join('');
+  // метки: буква+процент у кончика оси
+  const svgLabels=dims.map((d,i)=>{const a=(i*60-90)*Math.PI/180,lx=(svgCx+(svgR+13)*Math.cos(a)).toFixed(1),ly=(svgCy+(svgR+13)*Math.sin(a)).toFixed(1);return `<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" font-family="Arial,sans-serif" font-size="7.5" font-weight="700" fill="${RC[d]}">${d} ${pct(d)}%</text>`;}).join('');
+  const svgRadar=`<svg width="${svgSize}" height="${svgSize}" viewBox="0 0 ${svgSize} ${svgSize}" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:0 auto">${svgGrid}${svgAxes}<polygon points="${svgPts}" fill="rgba(55,37,121,.13)" stroke="#372579" stroke-width="1.8" stroke-linejoin="round"/>${svgDots}${svgLabels}</svg>`;
+
+  // sims table
+  const simRows=SIMS.map((s,i)=>{
+    const a=ST.ans[i]||{};
+    return `<tr>
+<td>${i+1}. ${s.icon} ${s.prof}</td>
+<td style="color:${a.ok?'#27ae60':'#e74c3c'};font-weight:700">${a.ok?'✓':'✗'}</td>
+<td>${a.ms?Math.round(a.ms/1000)+'с':'—'}</td>
+<td>${s.dims.map(d=>d).join('+')}</td></tr>`;
+  }).join('');
+
+  // careers compact
+  const carsHtml=p.cars.slice(0,3).map(c=>`
+<div class="pr-car">
+  <div class="pr-car-ic">${c.ic}</div>
+  <div class="pr-car-info"><div class="pr-car-t">${c.t}</div><div class="pr-car-d">${c.d}</div></div>
+  <div class="pr-car-m">${c.m}%</div>
+</div>`).join('');
+
+  const progsHtml=p.mtuci.map(pr=>`<div class="pr-prog">${pr}</div>`).join('');
+
+  // recommendations — 1 paragraph only for space
+  const recFull=PROF_REC[p.code]||PROF_REC['IR'];
+  // extract first paragraph from the HTML
+  const recShort=recFull.match(/<p>([\s\S]*?)<\/p>/)?.[0]||recFull;
+
+  document.getElementById('print-doc').innerHTML=`<div class="pr-wrap">
+<div class="pr-head">
+  <div class="pr-logo">${MTUCI_LOGO}</div>
+  <div class="pr-title-block">
+    <p class="pr-title">ПрофКвест — Профориентационный отчёт</p>
+    <div class="pr-subtitle">Методика RIASEC (Holland) · Северо-Кавказский филиал МТУСИ</div>
+  </div>
+</div>
+
+<div class="pr-meta">
+  <div class="pr-meta-row"><b>Участник</b>${ST.name}, ${ST.grade}</div>
+  <div class="pr-meta-row"><b>Дата</b>${dateStr}</div>
+  <div class="pr-meta-row"><b>Профиль</b>${p.code} · ${p.name}</div>
+  <div class="pr-meta-row"><b>Перцентиль</b>Топ ${100-pctle}%</div>
+</div>
+
+<div class="pr-body">
+  <div class="pr-col">
+
+    <div class="pr-sec">
+      <div class="pr-sec-t">1. Статистика</div>
+      <div class="pr-stats">
+        <div class="pr-sb"><div class="sv">${oks}/${SIMS.length}</div><div class="sl">Верных</div></div>
+        <div class="pr-sb"><div class="sv">${acc}%</div><div class="sl">Точность</div></div>
+        <div class="pr-sb"><div class="sv">${avg}с</div><div class="sl">Ср. время</div></div>
+        <div class="pr-sb"><div class="sv">${maxStreak}</div><div class="sl">Стрик</div></div>
+        <div class="pr-sb"><div class="sv">${totalPts}</div><div class="sl">Очки</div></div>
+        <div class="pr-sb"><div class="sv" style="font-size:8pt">${style}</div><div class="sl">Стиль</div></div>
+      </div>
+    </div>
+
+    <div class="pr-sec">
+      <div class="pr-sec-t">2. Профиль RIASEC</div>
+      ${svgRadar}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 6px;margin-top:4px">
+        <div>${barsL}</div>
+        <div>${barsR}</div>
+      </div>
+    </div>
+
+    <div class="pr-sec">
+      <div class="pr-sec-t">3. Анализ</div>
+      <div class="pr-rec">${recShort}</div>
+    </div>
+
+  </div>
+  <div class="pr-col">
+
+    <div class="pr-sec">
+      <div class="pr-sec-t">4. Симуляции</div>
+      <table class="pr-sim-table">
+        <tr><th>Профессия</th><th>Рез.</th><th>Врем.</th><th>Типы</th></tr>
+        ${simRows}
+      </table>
+    </div>
+
+    <div class="pr-sec">
+      <div class="pr-sec-t">5. Рекомендуемые профессии</div>
+      <div class="pr-cars">${carsHtml}</div>
+    </div>
+
+    <div class="pr-sec">
+      <div class="pr-sec-t">6. Направления СКФ МТУСИ</div>
+      <div class="pr-progs">${progsHtml}</div>
+    </div>
+
+  </div>
+</div>
+
+<div class="pr-sign">
+  <div class="pr-sign-b"><div class="pr-sign-line"></div>Дата</div>
+  <div class="pr-sign-b"><div class="pr-sign-line"></div>Специалист по профориентации</div>
+  <div class="pr-sign-b"><div class="pr-sign-line"></div>Подпись / Печать</div>
+</div>
+
+<div class="pr-disclaimer"><strong>Важно:</strong> Настоящий отчёт носит исключительно <strong>рекомендательный характер</strong> и не является официальным документом о профессиональной пригодности. Результаты основаны на игровых симуляциях согласно методике RIASEC (Holland, 1997). Окончательный выбор образовательной траектории остаётся за участником и должен приниматься с учётом личных, образовательных и иных факторов. Методика не заменяет комплексного психологического консультирования.</div>
+
+<div class="pr-footer"><span>СКФ МТУСИ · ПрофКвест</span><span>${dateStr}</span></div>
+</div>`;
+}
+
+/* ════════════════════════════════════
+   INIT
+════════════════════════════════════ */
+window.addEventListener('load',()=>{
+  document.getElementById('snd-btn').textContent=soundOn?'🔊':'🔇';
+
+  // Inject SVG logos
+  const spLogo=document.getElementById('sp-logo-svg');
+  if(spLogo) spLogo.innerHTML=`<svg width="200" height="86" viewBox="0 0 197 84" fill="none" xmlns="http://www.w3.org/2000/svg">${MTUCI_LOGO_W.replace(/<svg[^>]*>/,'').replace('</svg>','')}</svg>`;
+
+  const isDesktop=window.innerWidth>=1024;
+  const hLogo=document.getElementById('h-logo-svg');
+  if(hLogo){
+    hLogo.innerHTML=`<svg width="220" height="94" viewBox="0 0 197 84" fill="none" xmlns="http://www.w3.org/2000/svg">${MTUCI_LOGO_W.replace(/<svg[^>]*>/,'').replace('</svg>','')}</svg>`;
+    hLogo.style.display=isDesktop?'block':'none';
+    const badge=document.querySelector('.h-badge');
+    if(badge) badge.style.display=isDesktop?'none':'inline-flex';
+  }
+
+  window.addEventListener('resize',()=>{
+    const d=window.innerWidth>=1024;
+    const hl=document.getElementById('h-logo-svg');
+    const b=document.querySelector('.h-badge');
+    if(hl) hl.style.display=d?'block':'none';
+    if(b) b.style.display=d?'none':'inline-flex';
+  },{passive:true});
+
+  setTimeout(()=>{
+    document.getElementById('splash').classList.add('hide');
+    setTimeout(()=>{ try{document.getElementById('splash').remove();}catch(e){} },700);
+    startParticles();
+  },2000);
+});
+</script>
+</body>
+</html>

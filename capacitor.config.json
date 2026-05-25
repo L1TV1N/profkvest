@@ -1,0 +1,30 @@
+{
+  "appId": "ru.mtuci.skf.profkvest",
+  "appName": "ПрофКвест",
+  "webDir": "www",
+  "server": {
+    "hostname": "profkvest.skf-mtuci.ru",
+    "androidScheme": "https",
+    "allowNavigation": []
+  },
+  "ios": {
+    "backgroundColor": "#372579",
+    "statusBarStyle": "Light",
+    "contentInset": "always",
+    "webContentsDebuggingEnabled": false,
+    "limitsNavigationsToAppBoundDomains": true
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 0,
+      "launchAutoHide": true,
+      "backgroundColor": "#372579",
+      "showSpinner": false
+    },
+    "StatusBar": {
+      "style": "Light",
+      "backgroundColor": "#372579",
+      "overlaysWebView": false
+    }
+  }
+}
